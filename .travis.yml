@@ -1,0 +1,9 @@
+language: d
+dist: bionic
+sudo: true
+os:
+  - linux
+  - osx
+d:
+  - dmd
+  - ldc

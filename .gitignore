@@ -1,0 +1,49 @@
+# Visual Studio Code
+#.vscode/
+.suo
+
+# Compiled Object files
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.a
+*.lib
+
+# Executables
+*.exe
+
+# DUB
+.dub
+dub.*.json
+docs.json
+__dummy.html
+
+
+# Code coverage
+*.lst
+
+# Examples
+examples/echo/echo
+
+# others
+*-test-*
+.DS_Store
+*.zip
+*-test-*
+mixin_output.d
+
+# meson build directories
+build
+_build
+
+# idea
+.idea
+*.iml
+core
+*.log
