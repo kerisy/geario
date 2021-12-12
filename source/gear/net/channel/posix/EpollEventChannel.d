@@ -5,7 +5,7 @@ version (HAVE_EPOLL) :
 // dfmt on
 
 import gear.event.selector.Selector;
-import gear.net.channel.Common;
+import gear.net.channel.Types;
 import gear.net.channel.AbstractChannel;
 import gear.logging.ConsoleLogger;
 

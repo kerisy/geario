@@ -9,7 +9,7 @@ import gear.Functions;
 import gear.buffer.Bytes;
 import gear.net.channel.AbstractSocketChannel;
 import gear.net.channel.ChannelTask;
-import gear.net.channel.Common;
+import gear.net.channel.Types;
 import gear.net.IoError;
 import gear.logging.ConsoleLogger;
 import gear.system.Error;

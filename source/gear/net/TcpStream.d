@@ -11,7 +11,7 @@
 
 module gear.net.TcpStream;
 
-import gear.net.channel.Common;
+import gear.net.channel.Types;
 import gear.net.TcpStreamOptions;
 import gear.net.IoError;
 

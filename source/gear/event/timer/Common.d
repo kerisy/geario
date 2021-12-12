@@ -13,7 +13,7 @@ module gear.event.timer.Common;
 
 import gear.event.selector.Selector;
 import gear.net.channel.AbstractChannel;
-import gear.net.channel.Common;
+import gear.net.channel.Types;
 import gear.logging.ConsoleLogger;
 import gear.Exceptions;
 

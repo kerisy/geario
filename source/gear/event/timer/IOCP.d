@@ -18,7 +18,7 @@ version (HAVE_IOCP) :
 import gear.event.selector.Selector;
 import gear.event.timer.Common;
 import gear.Functions;
-import gear.net.channel.Common;
+import gear.net.channel.Types;
 
 import core.time;
 

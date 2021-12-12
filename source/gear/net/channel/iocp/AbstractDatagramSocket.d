@@ -7,7 +7,7 @@ version (HAVE_IOCP) :
 // import gear.buffer.Buffer;
 import gear.event.selector.Selector;
 import gear.net.channel.AbstractSocketChannel;
-import gear.net.channel.Common;
+import gear.net.channel.Types;
 import gear.net.channel.iocp.Common;
 import gear.logging.ConsoleLogger;
 import gear.Functions;

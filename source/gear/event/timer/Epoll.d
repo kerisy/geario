@@ -18,7 +18,7 @@ version (HAVE_EPOLL) :
 import gear.event.selector.Selector;
 import gear.event.timer.Common;
 import gear.Functions;
-import gear.net.channel.Common;
+import gear.net.channel.Types;
 
 import core.sys.posix.unistd;
 import core.sys.posix.time : itimerspec, CLOCK_MONOTONIC;

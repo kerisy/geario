@@ -16,7 +16,7 @@ version (HAVE_IOCP) :
 // dfmt on
 
 import gear.event.selector.Selector;
-import gear.net.channel.Common;
+import gear.net.channel.Types;
 import gear.net.channel;
 import gear.event.timer;
 import gear.logging.ConsoleLogger;

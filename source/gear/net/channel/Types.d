@@ -9,7 +9,7 @@
  *
  */
 
-module gear.net.channel.Common;
+module gear.net.channel.Types;
 
 import gear.net.IoError;
 import gear.buffer.Bytes;

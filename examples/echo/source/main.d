@@ -11,7 +11,6 @@
 
 import std.stdio;
 
-import gear.buffer.Buffer;
 import gear.buffer.Bytes;
 
 import gear.codec.textline.TextLineCodec;
@@ -23,7 +22,8 @@ import gear.logging.ConsoleLogger;
 
 import gear.net.TcpListener;
 import gear.net.TcpStream;
-import gear.net.IoError;
+
+import std.algorithm.comparison : among;
 
 void main()
 {
@@ -36,16 +36,29 @@ void main()
         {
             Infof("new connection from: %s", connection.RemoteAddress.toString());
 
-            Framed!(TextLineFrame) framed = new Framed!(TextLineFrame)(connection, new TextLineCodec());
+            if (1)
+            {
+                Framed!(TextLineFrame) framed = new Framed!(TextLineFrame)(connection, new TextLineCodec());
 
-            framed.OnFrame((TextLineFrame frame) {
-                Tracef("Line: %s", frame.line);
-            });
+                framed.OnFrame((TextLineFrame frame)
+                    {
+                        Tracef("Line: %s", frame.line);
+                        
+                        connection.Write(cast(ubyte[])frame.line.dup);
+                    });
+            }
+            else
+            {
+                connection.Received((Bytes bytes)
+                    {
+                        Infof("%s", bytes.Chunk());
 
-            connection.Received((Bytes bytes) {
-                    connection.Write(bytes);
-                    return DataHandleStatus.Done;
-                }).Disconnected(() {
+                        connection.Write(bytes);
+                        return DataHandleStatus.Done;
+                    });
+            }
+
+            connection.Disconnected(() {
                     Infof("client disconnected: %s", connection.RemoteAddress.toString());
                 }).Closed(() {
                     Infof("connection closed, local: %s, remote: %s",

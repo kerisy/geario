@@ -13,7 +13,7 @@ module gear.net.channel;
 
 public import gear.net.channel.AbstractChannel;
 public import gear.net.channel.AbstractSocketChannel;
-public import gear.net.channel.Common;
+public import gear.net.channel.Types;
 
 version (Posix) {
     public import gear.net.channel.posix;

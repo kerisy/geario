@@ -8,7 +8,7 @@ import gear.event.selector.Selector;
 import gear.buffer.Bytes;
 import gear.net.channel.AbstractSocketChannel;
 import gear.net.channel.ChannelTask;
-import gear.net.channel.Common;
+import gear.net.channel.Types;
 import gear.net.channel.iocp.Common;
 import gear.logging.ConsoleLogger;
 import gear.Functions;

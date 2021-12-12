@@ -12,7 +12,7 @@
 module gear.event.EventLoop;
 
 import gear.event.selector;
-import gear.net.channel.Common;
+import gear.net.channel.Types;
 import gear.logging.ConsoleLogger;
 import gear.util.worker;
 

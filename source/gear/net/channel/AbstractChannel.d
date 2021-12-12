@@ -1,7 +1,7 @@
 module gear.net.channel.AbstractChannel;
 
 import gear.event.selector.Selector;
-import gear.net.channel.Common;
+import gear.net.channel.Types;
 import gear.net.IoError;
 import gear.logging.ConsoleLogger;
 import gear.util.worker;

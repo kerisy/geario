@@ -7,7 +7,7 @@ import gear.codec.Codec;
 import gear.logging.ConsoleLogger;
 import gear.net.TcpListener;
 import gear.net.TcpStream;
-import gear.net.channel.Common;
+import gear.net.channel.Types;
 
 alias FrameHandler(T) = void delegate(T bufer);
 

@@ -6,7 +6,7 @@ version(HAVE_KQUEUE):
 
 import gear.event.selector.Selector;
 import gear.net.channel.AbstractChannel;
-import gear.net.channel.Common;
+import gear.net.channel.Types;
 
 import std.socket;
 

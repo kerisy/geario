@@ -7,7 +7,7 @@ version(Posix):
 import gear.event.selector.Selector;
 import gear.Functions;
 import gear.net.channel.AbstractSocketChannel;
-import gear.net.channel.Common;
+import gear.net.channel.Types;
 import gear.logging.ConsoleLogger;
 
 import std.socket;

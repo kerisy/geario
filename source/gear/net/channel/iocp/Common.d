@@ -8,7 +8,7 @@ pragma(lib, "Ws2_32");
 // dfmt on
 
 import gear.net.channel.AbstractChannel;
-import gear.net.channel.Common;
+import gear.net.channel.Types;
 import gear.logging.ConsoleLogger;
 import gear.Functions;
 

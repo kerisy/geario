@@ -2,7 +2,7 @@ module gear.net.channel.AbstractSocketChannel;
 
 import gear.event.selector.Selector;
 import gear.net.channel.AbstractChannel;
-import gear.net.channel.Common;
+import gear.net.channel.Types;
 import gear.logging.ConsoleLogger;
 
 import core.time;
@@ -42,32 +42,36 @@ abstract class AbstractSocketChannel : AbstractChannel {
         return _socket;
     }
 
-    override void Close() {
+    override void Close()
+    {
         // if (_isClosing) {
         //     // debug Warningf("already closed [fd=%d]", this.handle);
         //     return;
         // }
         // _isClosing = true;
-        version (GEAR_IO_MORE)
-            Tracef("socket channel closing [fd=%d]...", this.handle);
+        version (GEAR_IO_MORE) Tracef("socket channel closing [fd=%d]...", this.handle);
+
         version (HAVE_IOCP)
         {
             super.Close();
-        } else
+        }
+        else
         {
             if (IsBusy()) {
                 import std.parallelism;
 
-                version (GEAR_DEBUG)
-                    Warning("Close operation delayed");
+                version (GEAR_DEBUG) Warning("Close operation delayed");
+
                 auto theTask = task(() {
                     super.Close();
-                    while (IsBusy()) {
+                    while (IsBusy())
+                    {
                         version (GEAR_DEBUG)
                             Infof("waitting for idle [fd=%d]...", this.handle);
                         // Thread.sleep(20.msecs);
                     }
                 });
+
                 taskPool.put(theTask);
             } else {
                 super.Close();
@@ -141,7 +145,8 @@ abstract class AbstractSocketChannel : AbstractChannel {
 
     void Start();
 
-    void OnWriteDone() {
+    void OnWriteDone()
+    {
         assert(false, "unimplemented");
     }
 }
