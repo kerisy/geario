@@ -98,30 +98,28 @@ abstract class AbstractStream : AbstractSocketChannel {
      *
      */
     protected bool TryRead() {
-        bool IsDone = true;
+        bool isDone = true;
         this.ClearError();
 
         // TODO: Tasks pending completion -@zhangxueping at 2021-03-09T09:59:00+08:00
         // Using memory pool        
-        
-        
+   
         // auto readBuffer = Buffer.Get(_bufferSize);
         // auto readBufferSpace =  readBuffer.data();
         Bytes buffer = Bytes(_bufferSize);
-        byte[] readData = cast(byte[])buffer.AsArray();
+        ubyte[] readData = buffer.AsArray();
 
         // TODO : loop read data
         ptrdiff_t len = read(this.handle, cast(void*)readData.ptr, _bufferSize);
 
         // ubyte[] rb = new ubyte[BufferSize];
         // ptrdiff_t len = read(this.handle, cast(void*) rb.ptr, rb.length);
-        version (GEAR_IO_DEBUG) {
-            Tracef("reading[fd=%d]: %d bytes", this.handle, len);
-        }
+        version (GEAR_IO_DEBUG) Tracef("reading[fd=%d]: %d bytes", this.handle, len);
 
-
-        if (len > 0) {
-            version(GEAR_IO_DEBUG) {
+        if (len > 0)
+        {
+            version(GEAR_IO_DEBUG)
+            {
                 if (len <= 32)
                     Infof("fd: %d, %d bytes: %(%02X %)", this.handle, len, buffer.AsArray[0 .. len]);
                 else
@@ -135,70 +133,75 @@ abstract class AbstractStream : AbstractSocketChannel {
             // It's prossible that there are more data waitting for read in the read I/O space.
             if (len == buffer.Length) {
                 version (GEAR_IO_DEBUG) Infof("Read buffer is full read %d bytes. Need to read again.", len);
-                IsDone = false;
+                isDone = false;
             }
-        } else if (len == Socket.ERROR) {
+        }
+        else if (len == Socket.ERROR)
+        {
             // https://stackoverflow.com/questions/14595269/errno-35-eagain-returned-on-recv-call
             // FIXME: Needing refactor or cleanup -@Administrator at 2018-5-8 16:06:13
             // check more Error status
             this._error = errno != EINTR && errno != EAGAIN && errno != EWOULDBLOCK;
-            if (_error) {
+            if (_error)
+            {
                 this._errorMessage = GetErrorMessage(errno);
 
-                if(errno == ECONNRESET) {
+                if(errno == ECONNRESET)
+                {
                     // https://stackoverflow.com/questions/1434451/what-does-connection-reset-by-peer-mean
                     OnDisconnected();
                     ErrorOccurred(ErrorCode.CONNECTIONEESET , "connection reset by peer");
-                } else {
+                }
+                else
+                {
                     ErrorOccurred(ErrorCode.INTERRUPTED , "Error occurred on read");
                 }
-            } else {
-                debug Warningf("warning on read: fd=%d, errno=%d, message=%s", this.handle,
-                        errno, GetErrorMessage(errno));
             }
+        }
+        else
+        {
+            version (GEAR_DEBUG) Infof("connection broken: %s, fd:%d", _remoteAddress.toString(), this.handle);
 
-        } else {
-            version (GEAR_DEBUG)
-                Infof("connection broken: %s, fd:%d", _remoteAddress.toString(), this.handle);
             OnDisconnected();
         }
 
-        return IsDone;
+        return isDone;
     }
 
-    override protected void DoClose() {
-        version (GEAR_IO_DEBUG) {
-            Infof("peer socket %s closing: fd=%d", this.RemoteAddress.toString(), this.handle);
+    override protected void DoClose()
+    {
+        version (GEAR_IO_DEBUG) Infof("peer socket %s closing: fd=%d", this.RemoteAddress.toString(), this.handle);
+
+        if(this.socket is null)
+        {
+            import core.sys.posix.unistd;
+            core.sys.posix.unistd.close(this.handle);
         }
-        if(this.socket is null) {
-          import core.sys.posix.unistd;
-          core.sys.posix.unistd.close(this.handle);
-        } else {
-          this.socket.shutdown(SocketShutdown.BOTH);
-          this.socket.close();
-        }
-            
-        version (GEAR_IO_DEBUG) {
-            Infof("peer socket %s closed: fd=%d", this.RemoteAddress.toString, this.handle);
+        else
+        {
+            this.socket.shutdown(SocketShutdown.BOTH);
+            this.socket.close();
         }
 
+        version (GEAR_IO_DEBUG) Infof("peer socket %s closed: fd=%d", this.RemoteAddress.toString, this.handle);
+
         Task task = _task;
-        if(task !is null) {
+        if(task !is null)
+        {
             task.Stop();
         }
     }
 
-
     /**
      * Try to write a block of data.
      */
-    protected ptrdiff_t TryWrite(const(ubyte)[] data) {
+    protected ptrdiff_t TryWrite(const(ubyte)[] data) 
+    {
         ClearError();
         // const nBytes = this.socket.send(data);
-        version (GEAR_IO_DEBUG)
-            Tracef("try to write: %d bytes, fd=%d", data.length, this.handle);
+        version (GEAR_IO_DEBUG) Tracef("try to write: %d bytes, fd=%d", data.length, this.handle);
+
         const nBytes = write(this.handle, data.ptr, data.length);
-        Tracef("TryWrite: %s, len=%d", data.ptr, data.length);
 
         version (GEAR_IO_DEBUG)
             Tracef("actually written: %d / %d bytes, fd=%d", nBytes, data.length, this.handle);

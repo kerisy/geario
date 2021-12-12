@@ -11,9 +11,9 @@
 
 module gear.net.TcpListener;
 
-import gear.net.TcpStream;
-import gear.net.TcpStreamOptions;
-import gear.net.IoError;
+public import gear.net.TcpStream;
+public import gear.net.TcpStreamOptions;
+public import gear.net.IoError;
 
 import gear.event;
 import gear.Exceptions;

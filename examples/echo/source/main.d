@@ -12,39 +12,27 @@
 import std.stdio;
 
 import gear.buffer.Buffer;
+import gear.buffer.Bytes;
+
 import gear.codec.textline.TextLineCodec;
 import gear.codec.textline.TextLineDecoder;
 import gear.codec;
+
 import gear.event;
 import gear.logging.ConsoleLogger;
+
 import gear.net.TcpListener;
 import gear.net.TcpStream;
 import gear.net.IoError;
-import gear.util.ThreadHelper;
-import gear.util.worker;
-import gear.buffer.Bytes;
-
-// import std.socket;
-// import std.functional;
-// import std.exception;
-// import std.datetime;
-// import std.process;
-
-// import core.thread;
 
 void main()
 {
-    debug Tracef("Main thread: %s", GetTid());
-
-    // MemoryTaskQueue memoryQueue = new MemoryTaskQueue();
-    // Worker worker = new Worker(memoryQueue, 16);
-    // worker.Run();
     EventLoop loop = new EventLoop();
 
     TcpListener listener = new TcpListener(loop);
 
     // dfmt off
-    listener.Bind(8080)
+    listener.Bind(8888)
         .Listen(1024)
         .Accepted((TcpListener sender, TcpStream connection) {
             Infof("new connection from: %s", connection.RemoteAddress.toString());
