@@ -23,8 +23,6 @@ import gear.logging.ConsoleLogger;
 import gear.net.TcpListener;
 import gear.net.TcpStream;
 
-import std.algorithm.comparison : among;
-
 void main()
 {
     EventLoop loop = new EventLoop();
@@ -43,7 +41,7 @@ void main()
                 framed.OnFrame((TextLineFrame frame)
                     {
                         Tracef("Line: %s", frame.line);
-                        
+
                         connection.Write(cast(ubyte[])frame.line.dup);
                     });
             }
