@@ -47,9 +47,13 @@ class TcpListener : AbstractListener {
     PeerCreateHandler peerCreateHandler;
     EventErrorHandler errorHandler;
 
-    this(EventLoop loop, AddressFamily family = AddressFamily.INET, size_t bufferSize = 1024) {
+    private int _backlog = 1024;
+
+    this(EventLoop loop, AddressFamily family = AddressFamily.INET, size_t bufferSize = 1024)
+    {
         _tcpStreamoption = TcpStreamOptions.Create();
         _tcpStreamoption.bufferSize = bufferSize;
+        
         version (HAVE_IOCP)
             super(loop, family, bufferSize);
         else
@@ -143,12 +147,15 @@ class TcpListener : AbstractListener {
         return this;
     }
 
-    TcpListener Listen(int backlog) {
-        this.socket.listen(backlog);
+    TcpListener Listen(int backlog)
+    {
+        _backlog = backlog;
         return this;
     }
 
-    override void Start() {
+    override void Start()
+    {
+        this.socket.listen(_backlog);
         _inLoop.Register(this);
         _isRegistered = true;
         version (HAVE_IOCP)

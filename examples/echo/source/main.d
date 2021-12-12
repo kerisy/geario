@@ -31,10 +31,9 @@ void main()
 
     TcpListener listener = new TcpListener(loop);
 
-    // dfmt off
     listener.Bind(8888)
-        .Listen(1024)
-        .Accepted((TcpListener sender, TcpStream connection) {
+        .Accepted((TcpListener sender, TcpStream connection)
+        {
             Infof("new connection from: %s", connection.RemoteAddress.toString());
 
             Framed!(TextLineFrame) framed = new Framed!(TextLineFrame)(connection, new TextLineCodec());

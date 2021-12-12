@@ -17,6 +17,8 @@ abstract class AbstractSocketChannel : AbstractChannel {
 
     protected shared bool _isWritting = false; // keep a data write operation atomic
 
+    protected Socket _socket;
+
     this(Selector loop, ChannelType type) {
         super(loop, type);
     }
@@ -39,8 +41,6 @@ abstract class AbstractSocketChannel : AbstractChannel {
     protected @property Socket socket() {
         return _socket;
     }
-
-    protected Socket _socket;
 
     override void Close() {
         // if (_isClosing) {
@@ -119,13 +119,13 @@ abstract class AbstractSocketChannel : AbstractChannel {
         this._socket.setOption(forward!(level, option, value));
     }
 
-    final @property @trusted Address RemoteAddress() {
+    final @trusted Address RemoteAddress() {
         return _remoteAddress;
     }
 
     protected Address _remoteAddress;
 
-    final @property @trusted Address LocalAddress() {
+    final @trusted Address LocalAddress() {
         return _localAddress;
     }
 
@@ -144,5 +144,4 @@ abstract class AbstractSocketChannel : AbstractChannel {
     void OnWriteDone() {
         assert(false, "unimplemented");
     }
-
 }
