@@ -30,7 +30,7 @@ __dummy.html
 
 # Examples
 examples/echo/echo-server
-examples/echo/http-server
+examples/http/http-server
 
 # others
 *-test-*

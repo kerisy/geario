@@ -1,12 +1,14 @@
 module http.HttpRequestParser;
 
 import std.container;
+import std.stdio;
 
 import std.algorithm.comparison : equal;
 import std.conv : to;
 import std.algorithm.iteration : filter;
 import std.uni : icmp;
 import std.uni : isAlpha;
+import std.array;
 
 import core.stdc.ctype : isalnum;
 import core.stdc.stdlib : strtol;
@@ -243,7 +245,10 @@ private:
                     // req.headers.back().value.reserve(16);
                     // req.headers.back().name.push_back(input);
 
-                    req.headers.insertBack(HttpRequest.Header(Appender!string(""), Appender!string(input)));
+                    // req.headers.insertBack(HttpRequest.Header(Appender!string(""), Appender!string(input)));
+                    HttpRequest.Header header;
+                    header.name.put(input);
+                    req.headers.insertBack(header);
                     
                     _state = State.HeaderName;
                 }
@@ -299,7 +304,7 @@ private:
 
                         if( icmp(h.name[], "Content-Length") == 0 )
                         {
-                            _contentSize = h.value.to!int;
+                            _contentSize = h.value.data().to!int;
                             // req.content.reserve( _contentSize );
                         }
                         else if( icmp(h.name[], "Transfer-Encoding") == 0 )
@@ -330,11 +335,12 @@ private:
                 }
                 break;
             case State.ExpectingNewline_3: {
-                auto it = filter!(a => checkIfConnection(a) == true)(req.headers);
+                auto it = filter!(a => checkIfConnection(a))(req.headers.array);
 
-                if( it.empty() )
+                if(!it.empty() )
                 {
-                    if( icmp(it.value[], "Keep-Alive") == 0 )
+                    HttpRequest.Header header = it.front;
+                    if( icmp(header.value.data(), "Keep-Alive") == 0 )
                     {
                         req.keepAlive = true;
                     }
@@ -428,8 +434,8 @@ private:
             case State.ChunkSizeNewLine:
                 if( input == '\n' )
                 {
-                    _chunkSize = strtol(_chunkSizeStr.dup, null, 16);
-                    _chunkSizeStr.clear();
+                    _chunkSize = strtol(_chunkSizeStr.ptr, null, 16);
+                    // _chunkSizeStr.clear();
                     // req.content.reserve(strlen(req.content) + _chunkSize);
 
                     if( _chunkSize == 0 )
@@ -465,7 +471,7 @@ private:
                 {
                     return ParseResult.ParsingError;
                 }
-                break;
+                // break;
             case State.ChunkTrailerName:
                 if( isalnum(input) )
                 {
