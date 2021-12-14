@@ -3,7 +3,8 @@ module gear.util.queue.Queue;
 /**
  * 
  */
-abstract class Queue(T) {
+abstract class Queue(T)
+{
 
     bool IsEmpty();
 
@@ -12,5 +13,4 @@ abstract class Queue(T) {
     void Push(T task);
 
     void Clear();
-
 }
