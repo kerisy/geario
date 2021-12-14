@@ -29,7 +29,8 @@ __dummy.html
 *.lst
 
 # Examples
-examples/echo/echo
+examples/echo/echo-server
+examples/echo/http-server
 
 # others
 *-test-*
