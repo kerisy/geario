@@ -1,0 +1,14 @@
+{
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            "path": "examples/echo"
+        },
+        {
+            "path": "examples/http"
+        }
+    ],
+    "settings": {}
+}

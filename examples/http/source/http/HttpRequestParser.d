@@ -38,7 +38,7 @@ class HttpRequestParser
             ParsingError
         }
 
-        ParseResult parse(HttpRequest req, const ubyte[] text)
+        ParseResult parse(ref HttpRequest req, const ubyte[] text)
         {
             return consume(req, text);
         }
@@ -49,7 +49,7 @@ private:
         return icmp(h.name[], "Connection") == 0;
     }
 
-    ParseResult consume(HttpRequest req, const ubyte[] text)
+    ParseResult consume(ref HttpRequest req, const ubyte[] text)
     {
         foreach(input; text)
         {
