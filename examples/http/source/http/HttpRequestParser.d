@@ -1,14 +1,12 @@
 module http.HttpRequestParser;
 
 import std.container;
-import std.stdio;
 
 import std.algorithm.comparison : equal;
 import std.conv : to;
 import std.algorithm.iteration : filter;
-import std.uni : icmp;
-import std.uni : isAlpha;
-import std.array;
+import std.uni : icmp, isAlpha;
+import std.array : array;
 
 import core.stdc.ctype : isalnum;
 import core.stdc.stdlib : strtol;

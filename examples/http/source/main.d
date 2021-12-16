@@ -18,7 +18,7 @@ void main(string[] args)
 
     HttpRequestParser.ParseResult res = parser.parse(request, cast(ubyte[])text);
 
-    if( res == HttpRequestParser.ParseResult.ParsingCompleted )
+    if ( res == HttpRequestParser.ParseResult.ParsingCompleted )
     {
         writeln("method: ", request.method);
         writeln("uri", request.uri);
