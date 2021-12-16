@@ -22,6 +22,11 @@ void main(string[] args)
     {
         writeln("method: ", request.method);
         writeln("uri", request.uri);
+        foreach (header; request.headers)
+        {
+            writeln(header.name[], ": ", header.value[]);
+        }
+
         writeln("SUCCESS");
     }
     else
