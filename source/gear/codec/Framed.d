@@ -4,6 +4,7 @@ import gear.buffer.Buffer;
 import gear.buffer.Bytes;
 
 import gear.codec.Codec;
+import gear.codec.Encoder;
 
 import gear.net.TcpStream;
 import gear.net.channel.Types;
@@ -23,6 +24,9 @@ class Framed(T)
 
     this(TcpStream connection, Codec codec)
     {
+        _codec = codec;
+        _connection = connection;
+        
         codec.GetDecoder().OnFrame((Object frame)
         {
             if (_handler !is null)
@@ -49,5 +53,13 @@ class Framed(T)
     void OnFrame(FrameHandler!T handler)
     {
         _handler = handler;
+    }
+
+    void Send(Object message) {
+        Encoder encoder = _codec.GetEncoder();
+        Buffer buf = encoder.Encode(message);
+        string content = buf.toString();
+        Tracef("Writting: %s", content);
+        _connection.Write(buf.Data.data());
     }
 }
