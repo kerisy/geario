@@ -3,7 +3,7 @@ module http.HttpRequest;
 import std.container;
 import std.array : Appender;
 
-struct HttpRequest
+class HttpRequest
 {
     struct Header
     {

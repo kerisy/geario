@@ -1,6 +1,6 @@
 module http.HttpResponse;
 
-struct Response
+class HttpResponse
 {
     int versionMajor = 0;
     int versionMinor = 0;
