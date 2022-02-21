@@ -23,6 +23,7 @@ import gear.logging.ConsoleLogger;
 import gear.net.TcpListener;
 import gear.net.TcpStream;
 
+import http.codec.HttpCodec;
 import http.HttpRequest;
 import http.HttpResponse;
 
@@ -55,8 +56,8 @@ class HttpServer
                     string path = request.uri;
                     if(path == "/plaintext")
                     {
-                        response.header["Content-Type"] = "text/plain";
-                        response.content = "Hello, World!";
+                        response.headers["Content-Type"] = ["text/plain"];
+                        response.content = cast(ubyte[])"Hello, World!".dup;
                     }
 
                     framed.Send(response);
@@ -75,7 +76,7 @@ class HttpServer
 
     void Start()
     {
-        Tracef("Listening on: ", _listener.BindingAddress.toString());
+        Tracef("Listening on: %s", _listener.BindingAddress.toString());
 
         _listener.Start();
         _loop.Run();

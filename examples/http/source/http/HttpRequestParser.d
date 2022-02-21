@@ -636,7 +636,7 @@ unittest
                         "Host: 127.0.0.1\r\n" ~
                         "\r\n";
 
-    HttpRequest request;
+    HttpRequest request = new HttpRequest();
     
     auto parser = new HttpRequestParser;
 

@@ -19,7 +19,7 @@ class HttpDecoder : AbstractDecoder
         string content = buf.toString();
         Tracef("Decoding: %s", content);
 
-        HttpRequest request;
+        HttpRequest request = new HttpRequest();
         auto parser = new HttpRequestParser;
 
         HttpRequestParser.ParseResult result = parser.parse(request, cast(ubyte[])content.dup);
