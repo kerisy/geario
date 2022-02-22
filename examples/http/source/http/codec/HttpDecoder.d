@@ -31,6 +31,11 @@ class HttpDecoder : AbstractDecoder
                 _handler(request);
             }
 
+            if (request.keepAlive)
+            {
+                // TODO: set disconnect after sending
+            }
+
             return DataHandleStatus.Done;
         }
 
