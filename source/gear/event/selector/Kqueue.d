@@ -93,7 +93,8 @@ class AbstractSelector : Selector {
             Tracef("register channel: fd=%d, type=%s", fd, channel.type);
 
         int err = -1;
-        if (channel.type == ChannelType.Timer) {
+        if (channel.type == ChannelType.Timer)
+        {
             Kevent ev;
             AbstractTimer timerChannel = cast(AbstractTimer) channel;
             if (timerChannel is null)
@@ -103,18 +104,24 @@ class AbstractSelector : Selector {
                     EV_ADD | EV_ENABLE | EV_CLEAR, 0, time, cast(void*) channel);
             err = kevent(_kqueueFD, &ev, 1, null, 0, null);
         }
-        else {
+        else
+        {
             if (fd < 0)
                 return false;
+
             Kevent[2] ev = void;
             short read = EV_ADD | EV_ENABLE;
             short write = EV_ADD | EV_ENABLE;
-            if (channel.HasFlag(ChannelFlag.ETMode)) {
+
+            if (channel.HasFlag(ChannelFlag.ETMode))
+            {
                 read |= EV_CLEAR;
                 write |= EV_CLEAR;
             }
+
             EV_SET(&(ev[0]), fd, EVFILT_READ, read, 0, 0, cast(void*) channel);
             EV_SET(&(ev[1]), fd, EVFILT_WRITE, write, 0, 0, cast(void*) channel);
+
             if (channel.HasFlag(ChannelFlag.Read) && channel.HasFlag(ChannelFlag.Write))
                 err = kevent(_kqueueFD, &(ev[0]), 2, null, 0, null);
             else if (channel.HasFlag(ChannelFlag.Read))
@@ -122,13 +129,17 @@ class AbstractSelector : Selector {
             else if (channel.HasFlag(ChannelFlag.Write))
                 err = kevent(_kqueueFD, &(ev[1]), 1, null, 0, null);
         }
-        if (err < 0) {
+
+        if (err < 0)
+        {
             return false;
         }
+        
         return true;
     }
 
-    override bool Deregister(AbstractChannel channel) {
+    override bool Deregister(AbstractChannel channel)
+    {
         scope(exit) {
             super.Deregister(channel);
             version (GEAR_IO_DEBUG)
@@ -140,7 +151,9 @@ class AbstractSelector : Selector {
             return false;
 
         int err = -1;
-        if (channel.type == ChannelType.Timer) {
+
+        if (channel.type == ChannelType.Timer)
+        {
             Kevent ev;
             AbstractTimer timerChannel = cast(AbstractTimer) channel;
             if (timerChannel is null)
@@ -148,10 +161,12 @@ class AbstractSelector : Selector {
             EV_SET(&ev, fd, EVFILT_TIMER, EV_DELETE, 0, 0, cast(void*) channel);
             err = kevent(_kqueueFD, &ev, 1, null, 0, null);
         }
-        else {
+        else
+        {
             Kevent[2] ev = void;
             EV_SET(&(ev[0]), fd, EVFILT_READ, EV_DELETE, 0, 0, cast(void*) channel);
             EV_SET(&(ev[1]), fd, EVFILT_WRITE, EV_DELETE, 0, 0, cast(void*) channel);
+
             if (channel.HasFlag(ChannelFlag.Read) && channel.HasFlag(ChannelFlag.Write))
                 err = kevent(_kqueueFD, &(ev[0]), 2, null, 0, null);
             else if (channel.HasFlag(ChannelFlag.Read))
@@ -159,11 +174,15 @@ class AbstractSelector : Selector {
             else if (channel.HasFlag(ChannelFlag.Write))
                 err = kevent(_kqueueFD, &(ev[1]), 1, null, 0, null);
         }
-        if (err < 0) {
+
+        if (err < 0)
+        {
             return false;
         }
+
         // channel.currtLoop = null;
         channel.Clear();
+
         return true;
     }
 
@@ -195,9 +214,11 @@ class AbstractSelector : Selector {
         // auto tspec = timespec(1, 1000 * 10);
         int result = kevent(_kqueueFD, null, 0, events.ptr, events.length, tsp);
 
-        foreach (i; 0 .. result) {
+        foreach (i; 0 .. result)
+        {
             AbstractChannel channel = cast(AbstractChannel)(events[i].udata);
             ushort eventFlags = events[i].flags;
+
             version (GEAR_IO_DEBUG)
             Infof("handling event: events=%d, fd=%d", eventFlags, channel.handle);
 
@@ -206,6 +227,7 @@ class AbstractSelector : Selector {
                 channel.Close();
                 continue;
             }
+
             if (eventFlags & EV_EOF) {
                 version (GEAR_IO_DEBUG) Infof("channel[fd=%d] closed", channel.handle);
                 channel.Close();
@@ -215,6 +237,7 @@ class AbstractSelector : Selector {
             short filter = events[i].filter;
             HandeChannelEvent(channel, filter);
         }
+
         return result;
     }
 
@@ -222,18 +245,29 @@ class AbstractSelector : Selector {
         version (GEAR_IO_DEBUG)
         Infof("handling event: events=%d, fd=%d", filter, channel.handle);
 
-        try {
-            if(filter == EVFILT_TIMER) {
+        try
+        {
+            if(filter == EVFILT_TIMER)
+            {
                 channel.OnRead();
-            } else if (filter == EVFILT_WRITE) {
+            }
+            else if (filter == EVFILT_WRITE)
+            {
                 channel.OnWrite();
-            } else if (filter == EVFILT_READ) {
+            }
+            else if (filter == EVFILT_READ)
+            {
                 channel.OnRead();
-            } else {
+            }
+            else
+            {
                 Warningf("Unhandled channel fileter: %d", filter);
             }
-        } catch(Exception e) {
-            errorf("Error while handing channel: fd=%s, message=%s",
+
+        }
+        catch(Exception e)
+        {
+            Errorf("Error while handing channel: fd=%s, message=%s",
                         channel.handle, e.msg);
         }
     }

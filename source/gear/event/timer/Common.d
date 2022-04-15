@@ -297,7 +297,7 @@ abstract class TimerChannelBase : AbstractChannel, ITimer {
         return _wheelSize;
     }
 
-    @property size_t Time() {
+    @property size_t time() {
         return _interval;
     }
 
