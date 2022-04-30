@@ -29,7 +29,7 @@ enum DataHandleStatus {
 }
 
 
-alias DataReceivedHandler = DataHandleStatus delegate(Bytes bytes);
+alias DataReceivedHandler = void delegate(Bytes bytes);
 alias AcceptHandler = void delegate(Socket socket);
 alias ErrorEventHandler = Action1!(IoError);
 

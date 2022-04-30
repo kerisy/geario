@@ -40,7 +40,6 @@ class ChannelTask : Task {
     override protected void DoExecute() {
 
         Bytes bytes;
-        DataHandleStatus handleStatus = DataHandleStatus.Pending;
 
         do {
             bytes = _bytes.Pop();
@@ -52,18 +51,18 @@ class ChannelTask : Task {
             }
 
             version(GEAR_IO_DEBUG) {
-                Tracef("buffer: %s", cast(string)bytes.AsArray.ptr);
+                Tracef("buffer: %s", cast(string)bytes.AsArray);
             }
 
-            handleStatus = dataReceivedHandler(bytes);
+            dataReceivedHandler(bytes);
 
             version(GEAR_IO_DEBUG) {
-                Tracef("Handle status: %s, bytes: %s", handleStatus, cast(string)bytes.AsArray.ptr);
+                Tracef("bytes: %s", cast(string)bytes.AsArray);
             }
             
             _isFinishing = IsTerminated();
             if(!_isFinishing) {
-                _isFinishing = handleStatus == DataHandleStatus.Done && _bytes.IsEmpty();
+                _isFinishing = _bytes.IsEmpty();
             }
 
             if(_isFinishing) {

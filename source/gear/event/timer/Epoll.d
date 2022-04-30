@@ -48,8 +48,8 @@ abstract class AbstractTimer : TimerChannelBase {
     private bool setTimer() {
         itimerspec its;
         ulong sec, nsec;
-        sec = Time() / 1000;
-        nsec = (Time() % 1000) * 1_000_000;
+        sec = time() / 1000;
+        nsec = (time() % 1000) * 1_000_000;
 
         its.it_value.tv_sec = cast(typeof(its.it_value.tv_sec)) sec;
         its.it_value.tv_nsec = cast(typeof(its.it_value.tv_nsec)) nsec;

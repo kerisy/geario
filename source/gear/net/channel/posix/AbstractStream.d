@@ -305,7 +305,7 @@ abstract class AbstractStream : AbstractSocketChannel {
         version (GEAR_IO_DEBUG)
         {
             Tracef("checking status, isWritting: %s, writeBytes: %s",
-                _isWritting, _writeBytes.IsEmpty() ? "null" : cast(string)_writeBytes.AsArray.ptr);
+                _isWritting, _writeBytes.IsEmpty() ? "null" : cast(string)_writeBytes.AsArray);
         }
 
         if(!_isWritting) {
@@ -340,7 +340,7 @@ abstract class AbstractStream : AbstractSocketChannel {
                 version (GEAR_IO_DEBUG)
                 {
                     Infof("waiting to try again... fd=%d, writeBytes: %s",
-                        this.handle, cast(string)_writeBytes.AsArray.ptr);
+                        this.handle, cast(string)_writeBytes.AsArray);
                 }
                 // eventLoop.update(this);
                 return;
@@ -363,7 +363,7 @@ abstract class AbstractStream : AbstractSocketChannel {
                 CheckAllWriteDone();
             } else {
             version (GEAR_IO_DEBUG)
-                Infof("waiting to try again: fd=%d, writeBytes: %s", this.handle, cast(string)_writeBytes.AsArray.ptr);
+                Infof("waiting to try again: fd=%d, writeBytes: %s", this.handle, cast(string)_writeBytes.AsArray);
 
                 // eventLoop.update(this);
             }

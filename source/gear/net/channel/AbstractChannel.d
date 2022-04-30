@@ -114,7 +114,7 @@ abstract class AbstractChannel : Channel {
         return _flags[index];
     }
 
-    @property ChannelType type() {
+    @property ChannelType Type() {
         return _type;
     }
 

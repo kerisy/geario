@@ -302,7 +302,7 @@ class TcpStream : AbstractStream {
         }
 
         version (GEAR_IO_DEBUG)
-            Infof("data buffered (%s bytes): fd=%d", cast(string)bytes.AsArray.ptr, this.handle);
+            Infof("data buffered (%s bytes): fd=%d", cast(string)bytes.AsArray, this.handle);
         _isWritting = true;
         InitializeWriteQueue();
         _writeQueue.Push(bytes);
