@@ -46,9 +46,12 @@ class Framed(T)
 
             DataHandleStatus status = codec.GetDecoder().Decode(buffer);
 
+            Tracef("bytes: %s", bytes.toString());
+            Tracef("buffer: %s", buffer.toString());
+
             version(GEAR_IO_DEBUG) {
                 Tracef("buffer: %s", buffer.toString());
-                Trace("DataHandleStatus :", status);
+                Trace("DataHandleStatus: ", status);
             }
 
         });

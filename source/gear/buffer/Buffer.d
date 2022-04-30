@@ -18,6 +18,8 @@ import std.format;
 import std.stdio;
 import std.algorithm;
 import std.string;
+import std.traits;
+
 import nbuff;
 import gear.buffer.Bytes;
 
@@ -45,14 +47,14 @@ struct Buffer
         Append(str);
     }
 
-    this(byte[] array)
-    {
-        AppendBytes(array);
-    }
+    // this(byte[] array)
+    // {
+    //     Append(array);
+    // }
 
-    this(const ubyte[] array)
+    this(immutable(ubyte)[] array)
     {
-        AppendBytes(array);
+        Append(array);
     }
 
     /**
@@ -137,14 +139,10 @@ struct Buffer
      *
      * @return 
      */
-    void Append(T)(T tInt)
+    void Append(T)(T tInt) if(isIntegral!T)
     {
-        static if(is(T == NbuffChunk)) {
-            _nbuff.append(tInt);
-        } else {
-            NbuffChunk chunk =  NbuffChunk((cast(immutable(ubyte)[])[tInt]));
-            _nbuff.append(chunk);
-        }
+        NbuffChunk chunk =  NbuffChunk((cast(immutable(ubyte)[])[tInt]));
+        _nbuff.append(chunk);
     }
 
     /**
@@ -152,11 +150,18 @@ struct Buffer
      *
      * @return 
      */
-    void AppendBytes(T)(T tByte)
+    // void Append(T : E[], E)(T tByte) if(is(Unqual!(E) == byte) || is(Unqual!(E) == ubyte))
+    // {
+    //     NbuffChunk chunk =  NbuffChunk((cast(immutable(ubyte)[])tByte));
+    //     _nbuff.append(chunk);
+    // }
+
+    void Append(immutable(ubyte)[] tByte) 
     {
-        NbuffChunk chunk =  NbuffChunk((cast(immutable(ubyte)[])tByte));
+        NbuffChunk chunk =  NbuffChunk(tByte);
         _nbuff.append(chunk);
     }
+
 
     /**
      * the buffer put MutableMemoryChunk.
