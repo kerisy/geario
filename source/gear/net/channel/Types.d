@@ -23,11 +23,6 @@ import core.atomic;
 import std.socket;
 
 
-enum DataHandleStatus {
-    Done,
-    Pending
-}
-
 
 alias DataReceivedHandler = void delegate(Bytes bytes);
 alias AcceptHandler = void delegate(Socket socket);

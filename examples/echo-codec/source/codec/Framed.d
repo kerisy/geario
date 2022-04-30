@@ -38,7 +38,6 @@ class Framed(T)
                 _handler(message);
             }
 
-            return DataHandleStatus.Done;
         });
     }
 

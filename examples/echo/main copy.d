@@ -128,7 +128,7 @@ class HttpEncoder : AbstractEncoder {
 
 class HttpDecoder : AbstractDecoder {
     
-    override DataHandleStatus Decode(Buffer buf) {
+    override void Decode(Buffer buf) {
         string content = buf.toString();
         Tracef("Decoding: %s", content);
 
@@ -138,7 +138,6 @@ class HttpDecoder : AbstractDecoder {
             _handler(request);
         }
 
-        return DataHandleStatus.Done;
     }    
 }
 

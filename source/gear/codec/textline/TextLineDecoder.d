@@ -5,6 +5,7 @@ import gear.codec.Decoder;
 import gear.Exceptions;
 
 import gear.buffer.Buffer;
+import gear.buffer.Bytes;
 import gear.logging.ConsoleLogger;
 import gear.net.channel;
 import nbuff;
@@ -135,14 +136,17 @@ class TextLineDecoder : AbstractDecoder {
     /**
      * {@inheritDoc}
      */
-    override
-    DataHandleStatus Decode(Buffer buf) { 
+    override void Decode(Bytes bytes) { 
+
+        Buffer buffer;
+        buffer.Append(bytes);
+
         Context ctx = GetContext();
 
         if (LineDelimiter.AUTO == _delimiter) {
-            return DecodeAuto(ctx, buf);
+            return DecodeAuto(ctx, buffer);
         } else {
-            return DecodeNormal(ctx, buf);
+            return DecodeNormal(ctx, buffer);
         }
     }
 
@@ -178,8 +182,7 @@ class TextLineDecoder : AbstractDecoder {
     /**
      * Decode a line using the default _delimiter on the current system
      */
-    private DataHandleStatus DecodeAuto(Context ctx, Buffer inBuffer) { 
-        DataHandleStatus resultStatus = DataHandleStatus.Done;
+    private void DecodeAuto(Context ctx, Buffer inBuffer) { 
 
         int matchCount = ctx.getMatchCount();
 
@@ -252,15 +255,12 @@ class TextLineDecoder : AbstractDecoder {
 
         ctx.setMatchCount(matchCount);
         matchCount = 0;
-        
-        return resultStatus;
     }
 
     /**
      * Decode a line using the _delimiter defined by the caller
      */
-    private DataHandleStatus DecodeNormal(Context ctx, Buffer inBuffer) { 
-        DataHandleStatus resultStatus = DataHandleStatus.Done;
+    private void DecodeNormal(Context ctx, Buffer inBuffer) { 
         int matchCount = ctx.getMatchCount();
 
         // Try to find a match
@@ -307,7 +307,6 @@ class TextLineDecoder : AbstractDecoder {
         matchCount = 0;
 
         inBuffer.Clear();
-        return resultStatus;
     }
 
         /**

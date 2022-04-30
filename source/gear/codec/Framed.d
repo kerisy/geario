@@ -38,22 +38,7 @@ class Framed(T)
         connection.Received((Bytes bytes)
         {
             Tracef("bytes: %s", bytes.toString());
-
-            Buffer buffer;
-            buffer.Append(bytes);
-
-            Tracef("buffer: %s", buffer.toString());
-
-            DataHandleStatus status = codec.GetDecoder().Decode(buffer);
-
-            Tracef("bytes: %s", bytes.toString());
-            Tracef("buffer: %s", buffer.toString());
-
-            version(GEAR_IO_DEBUG) {
-                Tracef("buffer: %s", buffer.toString());
-                Trace("DataHandleStatus: ", status);
-            }
-
+            codec.GetDecoder().Decode(bytes);
         });
     }
 

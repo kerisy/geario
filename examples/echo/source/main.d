@@ -52,7 +52,6 @@ void main()
                         Infof("%s", bytes.Chunk());
 
                         connection.Write(bytes);
-                        return DataHandleStatus.Done;
                     });
             }
 
