@@ -33,6 +33,15 @@ struct Bytes {
         _data = _chunk.data();
     }
 
+
+    this(MutableMemoryChunk chunk) {
+        _capacity = chunk.size();
+        _readerIndex = 0;
+        _writerIndex = 0;
+        _chunk = chunk;
+        _data = _chunk.data();
+    }
+
     /** 
      * Creates a new BytesMut with the specified capacity.
      * The returned BytesMut will be able to hold at least capacity bytes without reallocating.
@@ -332,7 +341,13 @@ struct Bytes {
         size_t len = value.length;
         if(len == 0) return;
         EnsureWritable(len);
-        _data[_writerIndex .. _writerIndex + len] = value[0 .. $];
+
+        for(size_t i=0; i<len; i++) {
+            _data[_writerIndex + i] = value[i];
+        }
+
+        // bug
+        // _data[_writerIndex .. _writerIndex + len] = value[0 .. len];
         _writerIndex += len;
     }    
 

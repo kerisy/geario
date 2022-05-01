@@ -228,10 +228,10 @@ struct Buffer
      *
      * @return NbuffChunk
      */
-    NbuffChunk Data(size_t beg, size_t end) @safe
-    {
-        return _nbuff.data(beg, end);
-    }
+    // NbuffChunk Data(size_t beg, size_t end) @safe
+    // {
+    //     return _nbuff.data(beg, end);
+    // }
     
     /**
      * 
@@ -241,6 +241,12 @@ struct Buffer
     NbuffChunk Data() @safe @nogc
     {
         return _nbuff.data();
+    }
+
+    Bytes Read() {
+        NbuffChunk chunk = _nbuff.data();
+        const(ubyte)[] data = chunk.data;
+        return Bytes.From(data);
     }
 
     ///
@@ -298,6 +304,8 @@ struct Buffer
      */
     bool opEquals(this R)(auto ref R other) pure @safe @nogc
     {
+        // TODO: Tasks pending completion -@zhangxueping at 2022-05-01T16:33:13+08:00
+        // 
         //return _nbuff.opEquals(other);
         return false;
     }
