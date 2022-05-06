@@ -170,14 +170,14 @@ class AbstractSelector : Selector {
             if (channel is null) {
                 debug Warningf("channel is null");
             } else {
-                HandeChannelEvent(channel, events[i].events);
+                ChannelEventHandle(channel, events[i].events);
             }
         }
 
         return len;
     }
 
-    private void HandeChannelEvent(AbstractChannel channel, uint event) {
+    private void ChannelEventHandle(AbstractChannel channel, uint event) {
         version (GEAR_IO_DEBUG) {
             Warningf("thread: %s", Thread.getThis().name());
 

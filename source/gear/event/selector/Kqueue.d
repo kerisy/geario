@@ -235,44 +235,34 @@ class AbstractSelector : Selector {
             }
 
             short filter = events[i].filter;
-            HandeChannelEvent(channel, filter);
+            ChannelEventHandle(channel, filter);
         }
 
         return result;
     }
 
-    private void HandeChannelEvent(AbstractChannel channel, uint filter) {
+    private void ChannelEventHandle(AbstractChannel channel, uint filter) {
         version (GEAR_IO_DEBUG)
         Infof("handling event: events=%d, fd=%d", filter, channel.handle);
 
-        try
+        if(filter == EVFILT_TIMER)
         {
-            if(filter == EVFILT_TIMER)
-            {
-                channel.OnRead();
-            }
-            else if (filter == EVFILT_WRITE)
-            {
-                channel.OnWrite();
-            }
-            else if (filter == EVFILT_READ)
-            {
-                channel.OnRead();
-            }
-            else
-            {
-                Warningf("Unhandled channel filter: %d", filter);
-            }
-
+            channel.OnRead();
         }
-        catch(Exception e)
+        else if (filter == EVFILT_WRITE)
         {
-            Errorf("Error while handing channel: fd=%s, message=%s",
-                        channel.handle, e.msg);
+            channel.OnWrite();
+        }
+        else if (filter == EVFILT_READ)
+        {
+            channel.OnRead();
+        }
+        else
+        {
+            Warningf("Unhandled channel filter: %d", filter);
         }
     }
 }
-
 
 enum : short {
     EVFILT_READ = -1,
