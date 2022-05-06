@@ -90,10 +90,10 @@ class AbstractSelector : Selector {
         
         const int fd = channel.handle;
         version (GEAR_IO_DEBUG)
-            Tracef("register channel: fd=%d, type=%s", fd, channel.type);
+            Tracef("register channel: fd=%d, type=%s", fd, channel.Type);
 
         int err = -1;
-        if (channel.type == ChannelType.Timer)
+        if (channel.Type == ChannelType.Timer)
         {
             Kevent ev;
             AbstractTimer timerChannel = cast(AbstractTimer) channel;
@@ -143,7 +143,7 @@ class AbstractSelector : Selector {
         scope(exit) {
             super.Deregister(channel);
             version (GEAR_IO_DEBUG)
-                Tracef("deregister, channel(fd=%d, type=%s)", channel.handle, channel.type);
+                Tracef("deregister, channel(fd=%d, type=%s)", channel.handle, channel.Type);
         }
         
         const fd = channel.handle;
@@ -152,7 +152,7 @@ class AbstractSelector : Selector {
 
         int err = -1;
 
-        if (channel.type == ChannelType.Timer)
+        if (channel.Type == ChannelType.Timer)
         {
             Kevent ev;
             AbstractTimer timerChannel = cast(AbstractTimer) channel;
@@ -261,7 +261,7 @@ class AbstractSelector : Selector {
             }
             else
             {
-                Warningf("Unhandled channel fileter: %d", filter);
+                Warningf("Unhandled channel filter: %d", filter);
             }
 
         }

@@ -23,7 +23,7 @@ struct Bytes {
 
     private size_t _readerIndex;
     private size_t _writerIndex;
-    private size_t _capacity;   
+    private size_t _capacity;
 
     this(size_t capacity) {
         _capacity = capacity;
