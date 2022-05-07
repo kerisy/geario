@@ -2,18 +2,6 @@
     "folders": [
         {
             "path": "."
-        },
-        {
-            "path": "examples/echo"
-        },
-        {
-            "path": "examples/http"
-        },
-        {
-            "path": "examples/codec"
-        },
-        {
-            "path": "examples/buffer"
         }
     ],
     "settings": {}
