@@ -13,9 +13,7 @@ import std.stdio;
 
 import gear.buffer.Bytes;
 
-import gear.codec.textline.TextLineCodec;
-import gear.codec.textline.TextLineDecoder;
-import gear.codec;
+import codec.textline.TextLineCodec;
 
 import gear.event;
 import gear.logging.ConsoleLogger;
@@ -29,45 +27,27 @@ void main()
 
     TcpListener listener = new TcpListener(loop);
 
-    listener.Bind(8080)
-        .Accepted((TcpListener sender, TcpStream connection)
+    listener.Bind(8888)
+        .Accepted((TcpListener sender, TcpStream conn)
         {
-            Infof("new connection from: %s", connection.RemoteAddress.toString());
+            Infof("new connection from: %s", conn.RemoteAddress.toString());
 
-            if (1)
-            {
-                Framed!(TextLineFrame) framed = new Framed!(TextLineFrame)(connection, new TextLineCodec());
+            // new TextLineCodec for string
+            auto codec = new TextLineCodec;
 
-                framed.OnFrame((TextLineFrame frame)
-                    {
-                        Tracef("Line: %s", frame.line);
+            // Create string typed framed from Codec
+            auto framed = codec.CreateFramed(conn);
 
-                        connection.Write(cast(ubyte[])frame.line.dup);
-                    });
-            }
-            else
-            {
-                connection.Received((Bytes bytes)
-                    {
-                        Infof("%s", bytes.Chunk());
+            // Set OnFrame callback function for string message
+            framed.OnFrame((string message) {
 
-                        connection.Write(bytes);
-                    });
-            }
+                Tracef("Message: %s", message);
 
-            connection.Disconnected(() {
-                    Infof("client disconnected: %s", connection.RemoteAddress.toString());
-                }).Closed(() {
-                    Infof("connection closed, local: %s, remote: %s",
-                        connection.LocalAddress.toString(), connection.RemoteAddress.toString());
-                }).Error((IoError error) { 
-                    Errorf("Error occurred: %d  %s", error.errorCode, error.errorMsg); 
-                });
+                framed.Send(message);
+            });
         }).Error((IoError error) {
             writefln("Error occurred: %d  %s", error.errorCode, error.errorMsg);
         }).Start();
-
-    // dfmt on
 
     writeln("Listening on: ", listener.BindingAddress.toString());
     loop.Run();
