@@ -1,5 +1,5 @@
 /*
- * Gear - A refined core library for writing reliable asynchronous applications with D programming language.
+ * Archttp - A highly performant web framework written in D.
  *
  * Copyright (C) 2021-2022 Kerisy.com
  *
@@ -45,11 +45,7 @@ class Framed(DT, ET)
         _connection = connection;
 
         connection.Received(&Received);
-
-        connection.Writed((ulong bytes) {
-            Tracef("Pop bytes: %d", bytes);
-            //_sendBuffer.Pop(bytes);
-        });
+        connection.Writed(&Sended);
     }
 
     private void Received(Bytes bytes)
@@ -83,6 +79,12 @@ class Framed(DT, ET)
                 break;
             }
         }
+    }
+
+    private void Sended(ulong n)
+    {
+        Tracef("Pop bytes: %d", n);
+        // _sendBuffer.Pop(bytes);
     }
 
     void Handle(DT message)

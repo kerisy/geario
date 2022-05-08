@@ -1,5 +1,5 @@
 /*
- * Gear - A refined core library for writing reliable asynchronous applications with D programming language.
+ * Archttp - A highly performant web framework written in D.
  *
  * Copyright (C) 2021-2022 Kerisy.com
  *

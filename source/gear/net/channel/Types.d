@@ -1,5 +1,5 @@
 /*
- * Gear - A refined core library for writing reliable asynchronous applications with D programming language.
+ * Archttp - A highly performant web framework written in D.
  *
  * Copyright (C) 2021-2022 Kerisy.com
  *
@@ -23,7 +23,7 @@ import core.atomic;
 import std.socket;
 
 
-alias DataSendedHandler = void delegate(ulong bytes);
+alias DataSendedHandler = void delegate(ulong n);
 alias DataReceivedHandler = void delegate(Bytes bytes);
 alias AcceptHandler = void delegate(Socket socket);
 alias ErrorEventHandler = Action1!(IoError);
