@@ -58,7 +58,10 @@ class Framed(DT, ET)
                 if (result > 0)
                 {
                     Handle(message);
-                    continue;
+                    if (_buffer.Length() > 0)
+                        continue;
+                    else
+                        break;
                 }
 
                 if (result == 0)
@@ -86,6 +89,10 @@ class Framed(DT, ET)
     void Send(ET message)
     {
         Buffer buf = _codec.encoder().Encode(message);
+
+        // for debug
+        string content = buf.toString();
+        Tracef("Writting: %s", content);
 
         _connection.Write(buf.Data.data());
     }

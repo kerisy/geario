@@ -12,6 +12,7 @@
 module gear.codec.textline.TextLineEncoder;
 
 import gear.buffer.Buffer;
+import gear.buffer.Bytes;
 
 import gear.codec.Encoder;
 
