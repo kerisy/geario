@@ -1,7 +1,7 @@
 /*
  * Gear - A refined core library for writing reliable asynchronous applications with D programming language.
  *
- * Copyright (C) 2021 Kerisy.com
+ * Copyright (C) 2021-2022 Kerisy.com
  *
  * Website: https://www.kerisy.com
  *
@@ -29,48 +29,60 @@ alias FrameHandle(DT) = void delegate(DT bufer);
  */
 class Framed(DT, ET)
 {
-    private TcpStream _connection;
-    private Codec!(DT, ET) _codec;
-    private FrameHandle!DT _handle;
-    private Buffer _buffer;
+    private
+    {
+        TcpStream _connection;
+        Codec!(DT, ET) _codec;
+        FrameHandle!DT _handle;
+
+        Buffer _receivedBuffer;
+        Buffer _sendBuffer;
+    }
 
     this(TcpStream connection, Codec!(DT, ET) codec)
     {
         _codec = codec;
         _connection = connection;
 
-        connection.Received((Bytes bytes)
-        {
-            _buffer.Append(bytes);
+        connection.Received(&Received);
 
-            while (true)
-            {
-                DT message;
-                long result = codec.decoder().Decode(_buffer, message);
-                if (result == -1)
-                {
-                    Errorf("decode error, close the connection.");
-                    _connection.Close();
-                    break;
-                }
-
-                // Multiple messages, continue decode
-                if (result > 0)
-                {
-                    Handle(message);
-                    if (_buffer.Length() > 0)
-                        continue;
-                    else
-                        break;
-                }
-
-                if (result == 0)
-                {
-                    Warningf("waiting data ..");
-                    break;
-                }
-            }
+        connection.Writed((ulong bytes) {
+            Tracef("Pop bytes: %d", bytes);
+            //_sendBuffer.Pop(bytes);
         });
+    }
+
+    private void Received(Bytes bytes)
+    {
+        _receivedBuffer.Append(bytes);
+
+        while (true)
+        {
+            DT message;
+            long result = _codec.decoder().Decode(_receivedBuffer, message);
+            if (result == -1)
+            {
+                Errorf("decode error, close the connection.");
+                _connection.Close();
+                break;
+            }
+
+            // Multiple messages, continue decode
+            if (result > 0)
+            {
+                Handle(message);
+                if (_receivedBuffer.Length() > 0)
+                    continue;
+                else
+                    break;
+            }
+
+            if (result == 0)
+            {
+                Warningf("waiting data ..");
+                break;
+            }
+        }
     }
 
     void Handle(DT message)
@@ -88,12 +100,12 @@ class Framed(DT, ET)
 
     void Send(ET message)
     {
-        Buffer buf = _codec.encoder().Encode(message);
+        _sendBuffer = _codec.encoder().Encode(message);
 
         // for debug
-        string content = buf.toString();
+        string content = _sendBuffer.toString();
         Tracef("Writting: %s", content);
 
-        _connection.Write(buf.Data.data());
+        _connection.Write(_sendBuffer.Data().data());
     }
 }

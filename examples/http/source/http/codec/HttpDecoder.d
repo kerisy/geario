@@ -28,7 +28,7 @@ class HttpDecoder : Decoder!HttpRequest
 
             return length;
         }
-        else if (HttpRequestParser.ParseResult.ParsingIncompleted)
+        else if ( result == HttpRequestParser.ParseResult.ParsingIncompleted )
         {
             return 0;
         }

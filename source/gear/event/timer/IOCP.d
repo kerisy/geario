@@ -1,7 +1,7 @@
 /*
  * Gear - A refined core library for writing reliable asynchronous applications with D programming language.
  *
- * Copyright (C) 2021 Kerisy.com
+ * Copyright (C) 2021-2022 Kerisy.com
  *
  * Website: https://www.kerisy.com
  *

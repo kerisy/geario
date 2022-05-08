@@ -40,6 +40,7 @@ abstract class AbstractStream : AbstractSocketChannel {
     * you would make a copy of it.
     */
     protected DataReceivedHandler dataReceivedHandler;
+    protected DataSendedHandler dataSendedHandler;
     protected SimpleEventHandler disconnectionHandler;
     protected SimpleActionHandler dataWriteDoneHandler;
 

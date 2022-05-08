@@ -1,7 +1,7 @@
 /*
  * Gear - A refined core library for writing reliable asynchronous applications with D programming language.
  *
- * Copyright (C) 2021 Kerisy.com
+ * Copyright (C) 2021-2022 Kerisy.com
  *
  * Website: https://www.kerisy.com
  *
@@ -257,12 +257,11 @@ class TcpStream : AbstractStream {
         return this;
     }
 
-    TcpStream Writed(SimpleActionHandler handler) {
-        dataWriteDoneHandler = handler;
+    TcpStream Writed(DataSendedHandler handler) {
+        dataSendedHandler = handler;
         return this;
     }
-    alias onWritten = Writed;
-
+    
     TcpStream Closed(SimpleEventHandler handler) {
         closeHandler = handler;
         return this;
@@ -366,6 +365,8 @@ class TcpStream : AbstractStream {
                     version (GEAR_IO_DEBUG)
                         Infof("to write directly %d bytes, fd=%d", d.length, this.handle);
                     size_t nBytes = TryWrite(d);
+                    // call Writed handler?
+                    dataSendedHandler(nBytes);
 
                     if (nBytes == d.length) {
                         version (GEAR_IO_DEBUG)
