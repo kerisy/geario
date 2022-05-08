@@ -15,6 +15,8 @@ import gear.buffer.Buffer;
 
 import gear.codec.Decoder;
 
+import std.conv : to;
+
 class TextLineDecoder : Decoder!string
 {
     long Decode(ref Buffer buffer, ref string message)
@@ -23,7 +25,7 @@ class TextLineDecoder : Decoder!string
 
         foreach ( b; buffer.Data().data() )
         {
-            if (b == cast(ubyte) "\n")
+            if (b == "\n".to!(immutable(ubyte)))
             {
                 message = cast(string) buffer.Data().data()[0 .. i];
                 buffer.Pop(i + 1);
