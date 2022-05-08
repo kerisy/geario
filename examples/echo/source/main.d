@@ -13,7 +13,7 @@ import std.stdio;
 
 import gear.buffer.Bytes;
 
-import codec.textline.TextLineCodec;
+import gear.codec.textline.TextLineCodec;
 
 import gear.event;
 import gear.logging.ConsoleLogger;

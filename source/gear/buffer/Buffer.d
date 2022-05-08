@@ -23,7 +23,6 @@ import std.traits;
 import nbuff;
 import gear.buffer.Bytes;
 
-
 /** 
  * 
  */

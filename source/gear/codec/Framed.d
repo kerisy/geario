@@ -1,57 +1,92 @@
+/*
+ * Gear - A refined core library for writing reliable asynchronous applications with D programming language.
+ *
+ * Copyright (C) 2021 Kerisy.com
+ *
+ * Website: https://www.kerisy.com
+ *
+ * Licensed under the Apache-2.0 License.
+ *
+ */
+
 module gear.codec.Framed;
 
 import gear.buffer.Buffer;
 import gear.buffer.Bytes;
 
 import gear.codec.Codec;
-import gear.codec.Encoder;
 
 import gear.net.TcpStream;
 import gear.net.channel.Types;
 
 import gear.logging.ConsoleLogger;
 
-alias FrameHandler(T) = void delegate(T bufer);
+alias FrameHandle(DT) = void delegate(DT bufer);
 
-/** 
- * 
+/**
+ * DT: Decode Template
+ * ET: Encode Template
  */
-class Framed(T)
+class Framed(DT, ET)
 {
     private TcpStream _connection;
-    private Codec _codec;
-    private FrameHandler!T _handler;
+    private Codec!(DT, ET) _codec;
+    private FrameHandle!DT _handle;
+    private Buffer _buffer;
 
-    this(TcpStream connection, Codec codec)
+    this(TcpStream connection, Codec!(DT, ET) codec)
     {
         _codec = codec;
         _connection = connection;
-        
-        codec.GetDecoder().OnFrame((Object frame)
-        {
-            if (_handler !is null)
-            {
-                _handler(cast(T)frame);
-            }
-        });
 
         connection.Received((Bytes bytes)
         {
-            Tracef("bytes: %s", bytes.toString());
-            codec.GetDecoder().Decode(bytes);
+            _buffer.Append(bytes);
+
+            while (true)
+            {
+                DT message;
+                long result = codec.decoder().Decode(_buffer, message);
+                if (result == -1)
+                {
+                    Errorf("decode error, close the connection.");
+                    _connection.Close();
+                    break;
+                }
+
+                // Multiple messages, continue decode
+                if (result > 0)
+                {
+                    Handle(message);
+                    continue;
+                }
+
+                if (result == 0)
+                {
+                    Warningf("waiting data ..");
+                    break;
+                }
+            }
         });
     }
 
-    void OnFrame(FrameHandler!T handler)
+    void Handle(DT message)
     {
-        _handler = handler;
+        if (_handle !is null)
+        {
+            _handle(message);
+        }
     }
 
-    void Send(Object message) {
-        Encoder encoder = _codec.GetEncoder();
-        Buffer buf = encoder.Encode(message);
-        string content = buf.toString();
-        Tracef("Writting: %s", content);
+    void OnFrame(FrameHandle!DT handle)
+    {
+        _handle = handle;
+    }
+
+    void Send(ET message)
+    {
+        Buffer buf = _codec.encoder().Encode(message);
+
         _connection.Write(buf.Data.data());
     }
 }

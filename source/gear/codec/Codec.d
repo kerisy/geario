@@ -1,31 +1,42 @@
+/*
+ * Gear - A refined core library for writing reliable asynchronous applications with D programming language.
+ *
+ * Copyright (C) 2021 Kerisy.com
+ *
+ * Website: https://www.kerisy.com
+ *
+ * Licensed under the Apache-2.0 License.
+ *
+ */
+
 module gear.codec.Codec;
 
-import gear.codec.Decoder;
-import gear.codec.Encoder;
+import gear.buffer.Bytes;
+import gear.buffer.Buffer;
 
+import gear.net.TcpStream;
+
+public import gear.codec.Framed;
+public import gear.codec.Encoder;
+public import gear.codec.Decoder;
 
 /**
- * Provides {@link Encoder} and {@link Decoder} which translates
- * binary or  specific data into message object and vice versa.
+ * DT: Decode Template
+ * ET: Encode Template
  */
-interface Codec {
-    /**
-     * Returns a new (or reusable) instance of {@link Encoder} which
-     * encodes message objects into binary or -specific data.
-     * 
-     * @param connection The current connection
-     * @return The encoder instance
-     * @throws Exception If an error occurred while retrieving the encoder
-     */
-    Encoder GetEncoder();
+abstract class Codec(DT, ET)
+{
+    Framed!(DT, ET) CreateFramed(TcpStream conn)
+    {
+        auto framed = new Framed!(DT, ET)(conn, this);
 
-    /**
-     * Returns a new (or reusable) instance of {@link Decoder} which
-     * decodes binary or -specific data into message objects.
-     * 
-     * @param connection The current connection
-     * @return The decoder instance
-     * @throws Exception If an error occurred while retrieving the decoder
-     */
-    Decoder GetDecoder();
+        return framed;
+    }
+
+    // -1 : Failed
+    //  0 : Partial
+    // >0 : Parsed length
+    Decoder!DT decoder();
+
+    Encoder!ET encoder();
 }

@@ -1,33 +1,25 @@
+/*
+ * Gear - A refined core library for writing reliable asynchronous applications with D programming language.
+ *
+ * Copyright (C) 2021 Kerisy.com
+ *
+ * Website: https://www.kerisy.com
+ *
+ * Licensed under the Apache-2.0 License.
+ *
+ */
+
 module gear.codec.Decoder;
 
 import gear.buffer.Buffer;
-import gear.buffer.Bytes;
-import gear.Exceptions;
-import gear.net.channel;
-
-alias DecodingHandler = void delegate(Object);
 
 /** 
  * 
  */
-interface Decoder {
-    void Decode(Bytes buf);
-
-    void OnFrame(DecodingHandler handler);
-}
-
-/** 
- * 
- */
-class AbstractDecoder : Decoder {
-
-    protected DecodingHandler _handler;
-
-    void Decode(Bytes buf) {
-        implementationMissing();
-    }
-    
-    void OnFrame(DecodingHandler handler) {
-        _handler = handler;
-    }
+interface Decoder(DT)
+{
+    // -1 : Failed
+    //  0 : Partial
+    // >0 : Parsed length
+    long Decode(ref Buffer buffer, ref DT message);
 }
