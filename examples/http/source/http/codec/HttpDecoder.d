@@ -12,38 +12,29 @@ import http.HttpRequest;
 
 import gear.logging;
 
-class HttpDecoder : AbstractDecoder
+class HttpDecoder : Decoder!HttpRequest
 {
+    HttpRequestParser parser = new HttpRequestParser;
     
-    override void Decode(Bytes bytes)
+    override long Decode(ref Buffer buffer, ref HttpRequest request)
     {
-        // FIXME: Needing refactor or cleanup -@zhangxueping at 2022-04-30T11:58:30+08:00
-        // 
-        Buffer buf;
-        buf.Append(bytes);
-
-        string content = buf.toString();
-        Tracef("Decoding: %s", content);
-
-        HttpRequest request = new HttpRequest();
-        auto parser = new HttpRequestParser;
-
-        // HttpRequestParser.ParseResult result = parser.parse(request, cast(ubyte[])content.dup);
-        HttpRequestParser.ParseResult result = parser.parse(request, cast(ubyte[])content);
+        request = new HttpRequest;
+        HttpRequestParser.ParseResult result = parser.parse(request, cast(ubyte[])buffer.toString());
 
         if ( result == HttpRequestParser.ParseResult.ParsingCompleted )
         {
-            if(_handler !is null)
-            {
-                _handler(request);
-            }
+            long length = buffer.Length();
+            buffer.Clear();
 
-            if (request.keepAlive)
-            {
-                // TODO: set disconnect after sending
-            }
-
+            return length;
         }
-
+        else if (HttpRequestParser.ParseResult.ParsingIncompleted)
+        {
+            return 0;
+        }
+        else
+        {
+            return -1;
+        }
     }
 }

@@ -13,17 +13,16 @@ module http.HttpServer;
 
 import gear.buffer.Bytes;
 
-import gear.codec.textline.TextLineCodec;
-import gear.codec.textline.TextLineDecoder;
-import gear.codec;
-
 import gear.event;
 import gear.logging.ConsoleLogger;
 
 import gear.net.TcpListener;
 import gear.net.TcpStream;
 
+import gear.codec.Framed;
+
 import http.codec.HttpCodec;
+
 import http.HttpRequest;
 import http.HttpResponse;
 
@@ -47,7 +46,8 @@ class HttpServer
         _listener.Accepted((TcpListener sender, TcpStream connection) {
             Infof("new connection from: %s", connection.RemoteAddress.toString());
 
-            Framed!(HttpRequest) framed = new Framed!(HttpRequest)(connection, new HttpCodec());
+            auto codec = new HttpCodec();
+            auto framed = codec.CreateFramed(connection);
 
             framed.OnFrame((HttpRequest request)
                 {

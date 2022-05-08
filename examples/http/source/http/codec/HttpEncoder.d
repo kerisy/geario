@@ -9,14 +9,11 @@ import http.HttpResponse;
 
 enum string ResponseContent = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\nConnection: Keep-Alive\r\nContent-Type: text/plain\r\nServer: Hunt/1.0\r\nDate: Wed, 17 Apr 2013 12:00:00 GMT\r\n\r\nHello, world!";
 
-class HttpEncoder : AbstractEncoder
+class HttpEncoder : Encoder!HttpResponse
 {
 
-    override Buffer Encode(Object message)
+    override Buffer Encode(HttpResponse response)
     {
-        HttpResponse response = cast(HttpResponse)message;
-        assert(response !is null);
-
         // TODO: HttpResponse object serialize to string
 
         return Buffer(ResponseContent);

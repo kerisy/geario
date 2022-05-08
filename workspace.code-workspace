@@ -4,6 +4,9 @@
             "path": "."
         },
         {
+            "path": "examples/http"
+        },
+        {
             "path": "examples/echo"
         }
     ],

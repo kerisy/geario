@@ -7,10 +7,13 @@ import gear.codec.Decoder;
 import http.codec.HttpDecoder;
 import http.codec.HttpEncoder;
 
+import http.HttpRequest;
+import http.HttpResponse;
+
 /** 
  * 
  */
-class HttpCodec : Codec
+class HttpCodec : Codec!(HttpRequest, HttpResponse)
 {
     private HttpEncoder _encoder;
     private HttpDecoder _decoder;
@@ -20,13 +23,13 @@ class HttpCodec : Codec
         _decoder = new HttpDecoder();
     }
 
-    Encoder GetEncoder()
-    {
-        return _encoder;
-    }
-
-    Decoder GetDecoder()
+    override Decoder!HttpRequest decoder()
     {
         return _decoder;
+    }
+
+    override Encoder!HttpResponse encoder()
+    {
+        return _encoder;
     }
 }
