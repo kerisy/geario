@@ -83,8 +83,12 @@ class Framed(DT, ET)
 
     private void Sended(ulong n)
     {
-        Tracef("Pop bytes: %d", n);
-        // _sendBuffer.Pop(bytes);
+        if (_sendBuffer.Length() >= n)
+        {
+            version(GEAR_IO_DEBUG) Tracef("Pop bytes: %d", n);
+
+            _sendBuffer.Pop(n);
+        }
     }
 
     void Handle(DT message)
@@ -104,9 +108,7 @@ class Framed(DT, ET)
     {
         _sendBuffer = _codec.encoder().Encode(message);
 
-        // for debug
-        string content = _sendBuffer.toString();
-        Tracef("Writting: %s", content);
+        version(GEAR_IO_DEBUG) Tracef("Sending bytes: %d", _sendBuffer.Length());
 
         _connection.Write(_sendBuffer.Data().data());
     }
