@@ -2,8 +2,6 @@ module http.codec.HttpDecoder;
 
 import gear.codec.Decoder;
 import gear.codec.Encoder;
-import gear.buffer.Buffer;
-import gear.buffer.Bytes;
 
 import gear.event;
 

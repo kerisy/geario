@@ -4,7 +4,6 @@ module gear.net.channel.iocp.AbstractDatagramSocket;
 version (HAVE_IOCP) : 
 // dfmt on
 
-// import gear.buffer.Buffer;
 import gear.event.selector.Selector;
 import gear.net.channel.AbstractSocketChannel;
 import gear.net.channel.Types;
@@ -12,13 +11,11 @@ import gear.net.channel.iocp.Common;
 import gear.logging.ConsoleLogger;
 import gear.Functions;
 
-
 import core.sys.windows.windows;
 import core.sys.windows.winsock2;
 import core.sys.windows.mswsock;
 
 import std.socket;
-
 
 /**
 UDP Socket

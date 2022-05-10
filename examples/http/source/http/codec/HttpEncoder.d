@@ -2,8 +2,6 @@ module http.codec.HttpEncoder;
 
 import gear.codec.Encoder;
 
-import gear.buffer.Buffer;
-
 import http.HttpRequest;
 import http.HttpResponse;
 

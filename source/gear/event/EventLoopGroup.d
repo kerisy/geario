@@ -107,6 +107,11 @@ class EventLoopGroup : Lifecycle {
         return _eventLoops[i];
     }
 
+    EventLoop[] Loops()
+    {
+        return _eventLoops;
+    }
+
     int opApply(scope int delegate(EventLoop) dg) {
         int ret = 0;
         foreach (pool; _eventLoops) {
