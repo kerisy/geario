@@ -2,7 +2,6 @@ module gear.net.channel.ChannelTask;
 
 import gear.event.selector.Selector;
 import gear.Functions;
-import gear.buffer.Bytes;
 import gear.logging.ConsoleLogger;
 import gear.net.channel.AbstractSocketChannel;
 import gear.net.channel.Types;
@@ -11,6 +10,7 @@ import gear.system.Error;
 import gear.util.queue;
 import gear.util.worker;
 
+import nbuff;
 
 import std.format;
 import std.socket;
@@ -23,14 +23,16 @@ import core.atomic;
 class ChannelTask : Task {
     DataReceivedHandler dataReceivedHandler;
     private shared bool _isFinishing = false;
-    private Queue!(Bytes) _bytes;
+    // private Queue!(NbuffChunk) _bytes;
+    private Nbuff _buffers;
 
     this() {
-        _bytes = new SimpleQueue!(Bytes);
+        // _bytes = new SimpleQueue!(NbuffChunk);
     }
 
-    void put(Bytes bytes) {
-        _bytes.Push(bytes);
+    void put(NbuffChunk bytes) {
+        // _bytes.Push(bytes);
+        _buffers.append(bytes);
     }
 
     bool IsFinishing () {
@@ -39,11 +41,13 @@ class ChannelTask : Task {
 
     override protected void DoExecute() {
 
-        Bytes bytes;
+        NbuffChunk bytes;
 
         do {
-            bytes = _bytes.Pop();
-            if(bytes.IsEmpty()) {
+            bytes = _buffers.frontChunk();
+            _buffers.popChunk();
+
+            if(bytes.empty()) {
                 version(GEAR_IO_DEBUG) {
                     Warning("A null buffer poped");
                 }
@@ -51,23 +55,23 @@ class ChannelTask : Task {
             }
 
             version(GEAR_IO_DEBUG) {
-                Tracef("buffer: %s", cast(string)bytes.AsArray);
+                Tracef("buffer: %s", cast(string)bytes.data);
             }
 
             dataReceivedHandler(bytes);
 
             version(GEAR_IO_DEBUG) {
-                Tracef("bytes: %s", cast(string)bytes.AsArray);
+                Tracef("bytes: %s", cast(string)bytes.data);
             }
             
             _isFinishing = IsTerminated();
             if(!_isFinishing) {
-                _isFinishing = _bytes.IsEmpty();
+                _isFinishing = _buffers.empty();
             }
 
             if(_isFinishing) {
                 version(GEAR_DEBUG) {
-                    if(!bytes.IsEmpty() || !_bytes.IsEmpty()) {
+                    if(!bytes.empty() || !_buffers.empty()) {
                         Warningf("The buffered data lost");
                     }
                 }

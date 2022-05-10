@@ -11,8 +11,7 @@
 
 module gear.codec.Framed;
 
-import gear.buffer.Buffer;
-import gear.buffer.Bytes;
+import nbuff;
 
 import gear.codec.Codec;
 
@@ -35,8 +34,8 @@ class Framed(DT, ET)
         Codec!(DT, ET) _codec;
         FrameHandle!DT _handle;
 
-        Buffer _receivedBuffer;
-        Buffer _sendBuffer;
+        Nbuff _receivedBuffer;
+        Nbuff _sendBuffer;
     }
 
     this(TcpStream connection, Codec!(DT, ET) codec)
@@ -48,9 +47,9 @@ class Framed(DT, ET)
         connection.Writed(&Sended);
     }
 
-    private void Received(Bytes bytes)
+    private void Received(NbuffChunk bytes)
     {
-        _receivedBuffer.Append(bytes);
+        _receivedBuffer.append(bytes);
 
         while (true)
         {
@@ -67,7 +66,7 @@ class Framed(DT, ET)
             if (result > 0)
             {
                 Handle(message);
-                if (_receivedBuffer.Length() > 0)
+                if (_receivedBuffer.length() > 0)
                     continue;
                 else
                     break;
@@ -83,12 +82,12 @@ class Framed(DT, ET)
 
     private void Sended(ulong n)
     {
-        if (_sendBuffer.Length() >= n)
-        {
-            version(GEAR_IO_DEBUG) Tracef("Pop bytes: %d", n);
+        // if (_sendBuffer.length() >= n)
+        // {
+        //     version(GEAR_IO_DEBUG) Tracef("Pop bytes: %d", n);
 
-            _sendBuffer.Pop(n);
-        }
+        //     _sendBuffer.pop(n);
+        // }
     }
 
     void Handle(DT message)
@@ -106,10 +105,10 @@ class Framed(DT, ET)
 
     void Send(ET message)
     {
-        _sendBuffer = _codec.encoder().Encode(message);
+        NbuffChunk bytes = _codec.encoder().Encode(message);
 
-        version(GEAR_IO_DEBUG) Tracef("Sending bytes: %d", _sendBuffer.Length());
+        version(GEAR_IO_DEBUG) Tracef("Sending bytes: %d", bytes.length());
 
-        _connection.Write(_sendBuffer.Data().data());
+        _connection.Write(bytes);
     }
 }

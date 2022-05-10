@@ -11,8 +11,7 @@
 
 module gear.codec.Codec;
 
-import gear.buffer.Bytes;
-import gear.buffer.Buffer;
+import nbuff;
 
 import gear.net.TcpStream;
 

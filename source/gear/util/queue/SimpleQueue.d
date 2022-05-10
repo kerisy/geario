@@ -10,13 +10,14 @@ import core.time;
 import core.thread;
 
 import std.container.dlist;
-
+// import ikod.containers.unrolledlist: UnrolledList;
 
 /**
  * It's a thread-safe queue
  */
 class SimpleQueue(T) : Queue!(T) {
     private DList!T _list;
+    // private UnrolledList!T _list;
     private Mutex _headLock;
     private Duration _timeout;
     private bool _isWaiting = false;

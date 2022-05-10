@@ -15,7 +15,8 @@ import gear.net.channel.Types;
 import gear.net.TcpStreamOptions;
 import gear.net.IoError;
 
-import gear.buffer.Bytes;
+import nbuff;
+
 import gear.event.selector.Selector;
 import gear.event;
 import gear.Functions;
@@ -292,8 +293,8 @@ class TcpStream : AbstractStream {
         }
     }
 
-    void Write(Bytes bytes) {
-        assert(!bytes.IsEmpty());
+    void Write(NbuffChunk bytes) {
+        assert(!bytes.empty());
 
         if (!_isConnected) {
             throw new Exception(format("The connection %s closed!",
@@ -301,10 +302,10 @@ class TcpStream : AbstractStream {
         }
 
         version (GEAR_IO_DEBUG)
-            Infof("data buffered (%s bytes): fd=%d", cast(string)bytes.AsArray, this.handle);
+            Infof("data buffered (%s bytes): fd=%d", cast(string)bytes.data, this.handle);
         _isWritting = true;
         InitializeWriteQueue();
-        _writeQueue.Push(bytes);
+        _senddingBuffer.append(bytes);
         OnWrite();
     }
 
@@ -313,7 +314,7 @@ class TcpStream : AbstractStream {
      */
     void Write(const(ubyte)[] data) {
         
-        Bytes bytes = Bytes.From(data);
+        NbuffChunk bytes = NbuffChunk(cast(string) data);
 
         version (GEAR_IO_DEBUG_MORE) {
             Infof("%d bytes(fd=%d): %(%02X %)", data.length, this.handle, data[0 .. $]);
@@ -340,7 +341,7 @@ class TcpStream : AbstractStream {
             return Write(bytes);
         } else {
 
-            if (_writeQueue is null || (_writeQueue.IsEmpty()) && !_isWritting) {
+            if (_senddingBuffer.empty() && !_isWritting) {
                 _isWritting = true;
                 const(ubyte)[] d = data;
 
@@ -366,7 +367,7 @@ class TcpStream : AbstractStream {
                         Infof("to write directly %d bytes, fd=%d", d.length, this.handle);
                     size_t nBytes = TryWrite(d);
                     // call Writed handler?
-                    dataSendedHandler(nBytes);
+                    // dataSendedHandler(nBytes);
 
                     if (nBytes == d.length) {
                         version (GEAR_IO_DEBUG)
@@ -381,7 +382,7 @@ class TcpStream : AbstractStream {
                         version (GEAR_IO_DEBUG)
                             Warningf("buffering data: %d bytes, fd=%d", d.length, this.handle);
                         InitializeWriteQueue();
-                        _writeQueue.Push(bytes);
+                        _senddingBuffer.append(bytes);
                         break;
                     }
                 }
@@ -446,7 +447,7 @@ protected:
         super.OnClose();
         if(lastConnectStatus) {
             version (GEAR_IO_DEBUG) {
-                if (_writeQueue !is null && !_writeQueue.IsEmpty) {
+                if (!_senddingBuffer.empty()) {
                     Warningf("Some data has not been sent yet: fd=%d", this.handle);
                 }
             }

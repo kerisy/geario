@@ -6,7 +6,6 @@ version(Posix):
 
 import gear.event.selector.Selector;
 import gear.Functions;
-import gear.buffer.Bytes;
 import gear.net.channel.AbstractSocketChannel;
 import gear.net.channel.ChannelTask;
 import gear.net.channel.Types;
@@ -15,6 +14,7 @@ import gear.logging.ConsoleLogger;
 import gear.system.Error;
 import gear.util.worker;
 
+import nbuff;
 
 import std.format;
 import std.socket;
@@ -31,7 +31,7 @@ TCP Peer
 */
 abstract class AbstractStream : AbstractSocketChannel {
     protected size_t _bufferSize = 4096;
-    private Bytes _writeBytes;
+    private NbuffChunk _writeBytes;
     private ChannelTask _task = null;
     size_t _receivedLen = 0;
 
@@ -46,7 +46,8 @@ abstract class AbstractStream : AbstractSocketChannel {
 
     protected AddressFamily _family;
     // protected Buffer _bufferForRead;
-    protected WritingBufferQueue _writeQueue;
+    // protected WritingBufferQueue _writeQueue;
+    protected Nbuff _senddingBuffer;
     protected bool _isWriteCancelling = false;
 
     this(Selector loop, AddressFamily family = AddressFamily.INET, size_t bufferSize = 4096 * 2) {
@@ -62,7 +63,7 @@ abstract class AbstractStream : AbstractSocketChannel {
     abstract bool IsConnected() nothrow;
     abstract protected void OnDisconnected();
 
-    private void onDataReceived(Bytes bytes) {
+    private void onDataReceived(NbuffChunk bytes) {
         if(taskWorker is null) {
             // TODO: Tasks pending completion -@zhangxueping at 2021-03-09T09:59:00+08:00
             // Using memory pool
@@ -107,11 +108,12 @@ abstract class AbstractStream : AbstractSocketChannel {
    
         // auto readBuffer = Buffer.Get(_bufferSize);
         // auto readBufferSpace =  readBuffer.data();
-        Bytes buffer = Bytes(_bufferSize);
-        ubyte[] readData = buffer.AsArray();
+        // NbuffChunk buffer = Nbuff.get(_bufferSize);
+        auto buffer = Nbuff.get(_bufferSize);
+        // ubyte[] readData = buffer.AsArray();
 
         // TODO : loop read data
-        ptrdiff_t len = read(this.handle, cast(void*)readData.ptr, _bufferSize);
+        ptrdiff_t len = read(this.handle, cast(void*)buffer.ptr, _bufferSize);
 
         // ubyte[] rb = new ubyte[BufferSize];
         // ptrdiff_t len = read(this.handle, cast(void*) rb.ptr, rb.length);
@@ -122,17 +124,17 @@ abstract class AbstractStream : AbstractSocketChannel {
             version(GEAR_IO_DEBUG)
             {
                 if (len <= 32)
-                    Infof("fd: %d, %d bytes: %(%02X %)", this.handle, len, buffer.AsArray[0 .. len]);
+                    Infof("fd: %d, %d bytes: %(%02X %)", this.handle, len, buffer[0 .. len]);
                 else
-                    Infof("fd: %d, 32/%d bytes: %(%02X %)", this.handle, len, buffer.AsArray[0 .. 32]);
+                    Infof("fd: %d, 32/%d bytes: %(%02X %)", this.handle, len, buffer[0 .. 32]);
             }
 
-            buffer.ReaderIndex(0);
-            buffer.WriterIndex(len);
-            onDataReceived(buffer);  
+            // buffer.ReaderIndex(0);
+            // buffer.WriterIndex(len);
+            onDataReceived(NbuffChunk(buffer, len));
 
             // It's prossible that there are more data waitting for read in the read I/O space.
-            if (len == buffer.Length) {
+            if (len == _bufferSize) {
                 version (GEAR_IO_DEBUG) Infof("Read buffer is full read %d bytes. Need to read again.", len);
                 isDone = false;
             }
@@ -254,11 +256,11 @@ abstract class AbstractStream : AbstractSocketChannel {
         return 0;
     }
 
-    private bool TryNextWrite(Bytes buffer) {
-        const(ubyte)[] data = cast(const(ubyte)[])buffer.AsArray;
+    private bool TryNextWrite(NbuffChunk buffer) {
+        const(ubyte)[] data = cast(const(ubyte)[])buffer.data;
         version (GEAR_IO_DEBUG) {
             Tracef("writting from a buffer [fd=%d], %d bytes, buffer: %s",
-                this.handle, data.length, buffer.AsArray.ptr);
+                this.handle, data.length, buffer.data.ptr);
         }
 
         ptrdiff_t remaining = data.length;
@@ -293,8 +295,10 @@ abstract class AbstractStream : AbstractSocketChannel {
     }
 
     void ResetWriteStatus() {
-        if(_writeQueue !is null)
-            _writeQueue.Clear();
+        // if(_writeQueue !is null)
+        //     _writeQueue.Clear();
+        if(!_senddingBuffer.empty())
+            _senddingBuffer.clear();
         atomicStore(_isWritting, false);
         _isWriteCancelling = false;
     }
@@ -306,7 +310,7 @@ abstract class AbstractStream : AbstractSocketChannel {
         version (GEAR_IO_DEBUG)
         {
             Tracef("checking status, isWritting: %s, writeBytes: %s",
-                _isWritting, _writeBytes.IsEmpty() ? "null" : cast(string)_writeBytes.AsArray);
+                _isWritting, _writeBytes.empty() ? "null" : cast(string)_writeBytes.data());
         }
 
         if(!_isWritting) {
@@ -334,9 +338,9 @@ abstract class AbstractStream : AbstractSocketChannel {
             _isBusyWritting = false;
         }
 
-        if(!_writeBytes.IsEmpty()) {
+        if(!_writeBytes.empty()) {
             if(TryNextWrite(_writeBytes)) {
-                _writeBytes.Clear();
+                _writeBytes.popBackN(_writeBytes.length);
             } else {
                 version (GEAR_IO_DEBUG)
                 {
@@ -355,12 +359,14 @@ abstract class AbstractStream : AbstractSocketChannel {
         }
 
         version (GEAR_IO_DEBUG) {
-            Tracef("start to write [fd=%d], writeBytes %s empty", this.handle, _writeBytes.IsEmpty() ? "is" : "is not");
+            Tracef("start to write [fd=%d], writeBytes %s empty", this.handle, _writeBytes.empty() ? "is" : "is not");
         }
 
-        if(_writeQueue.TryDequeue(_writeBytes)) {
+        _writeBytes = _senddingBuffer.frontChunk();
+        _senddingBuffer.popChunk();
+        if(!_writeBytes.empty()) {
             if(TryNextWrite(_writeBytes)) {
-                _writeBytes.Clear();
+                _writeBytes.popBackN(_writeBytes.length);
                 CheckAllWriteDone();
             } else {
             version (GEAR_IO_DEBUG)
@@ -379,10 +385,10 @@ abstract class AbstractStream : AbstractSocketChannel {
         version (GEAR_IO_DEBUG) {
             import std.conv;
             Tracef("checking remaining: fd=%d, writeQueue empty: %s", this.handle,
-               _writeQueue is null ||  _writeQueue.IsEmpty().to!string());
+               _senddingBuffer.empty() ||  _senddingBuffer.empty().to!string());
         }
 
-        if(_writeQueue is null || _writeQueue.IsEmpty()) {
+        if(_senddingBuffer.empty()) {
             ResetWriteStatus();
             version (GEAR_IO_DEBUG)
                 Infof("All data are written out: fd=%d", this.handle);
@@ -395,9 +401,9 @@ abstract class AbstractStream : AbstractSocketChannel {
     }
 
     protected void InitializeWriteQueue() {
-        if (_writeQueue is null) {
-            _writeQueue = new WritingBufferQueue();
-        }
+        // if (_writeQueue is null) {
+        //     _writeQueue = new WritingBufferQueue();
+        // }
     }
 
     protected bool DoConnect(Address addr) {

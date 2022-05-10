@@ -11,18 +11,14 @@
 
 module gear.codec.textline.TextLineEncoder;
 
-import gear.buffer.Buffer;
-import gear.buffer.Bytes;
+import nbuff;
 
 import gear.codec.Encoder;
 
 class TextLineEncoder : Encoder!string
 {
-    Buffer Encode(string message)
+    NbuffChunk Encode(string message)
     {
-        Buffer buf;
-        buf.Append(message);
-
-        return buf;
+        return NbuffChunk(message);
     }
 }

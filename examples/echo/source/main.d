@@ -11,12 +11,10 @@
 
 import std.stdio;
 
-import gear.buffer.Bytes;
-
 import gear.codec.textline.TextLineCodec;
 
 import gear.event;
-import gear.logging.ConsoleLogger;
+import gear.logging;
 
 import gear.net.TcpListener;
 import gear.net.TcpStream;

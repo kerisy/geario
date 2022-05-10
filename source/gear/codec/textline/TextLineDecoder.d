@@ -11,7 +11,7 @@
 
 module gear.codec.textline.TextLineDecoder;
 
-import gear.buffer.Buffer;
+import nbuff;
 
 import gear.codec.Decoder;
 
@@ -19,16 +19,16 @@ import std.conv : to;
 
 class TextLineDecoder : Decoder!string
 {
-    long Decode(ref Buffer buffer, ref string message)
+    long Decode(ref Nbuff buffer, ref string message)
     {
         ulong i = 0;
 
-        foreach ( b; buffer.Data().data() )
+        foreach ( b; cast(string) buffer.data().data() )
         {
-            if (b == "\n".to!(immutable(ubyte)))
+            if (b.to!string == "\n")
             {
-                message = cast(string) buffer.Data().data()[0 .. i];
-                buffer.Pop(i + 1);
+                message = cast(string) buffer.data().data()[0 .. i];
+                buffer.pop(i + 1);
                 break;
             }
 

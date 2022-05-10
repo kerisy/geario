@@ -11,12 +11,12 @@
 
 module gear.codec.Encoder;
 
-import gear.buffer.Buffer;
+import nbuff;
 
 /** 
  * 
  */
 interface Encoder(ET)
 {
-    Buffer Encode(ET message);
+    NbuffChunk Encode(ET message);
 }

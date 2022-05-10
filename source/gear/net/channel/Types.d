@@ -12,8 +12,6 @@
 module gear.net.channel.Types;
 
 import gear.net.IoError;
-import gear.buffer.Bytes;
-//import gear.net.SimpleQueue;
 import gear.util.queue.SimpleQueue;
 import gear.Functions;
 import gear.system.Memory;
@@ -22,9 +20,10 @@ import gear.logging.Logger;
 import core.atomic;
 import std.socket;
 
+import nbuff;
 
 alias DataSendedHandler = void delegate(ulong n);
-alias DataReceivedHandler = void delegate(Bytes bytes);
+alias DataReceivedHandler = void delegate(NbuffChunk bytes);
 alias AcceptHandler = void delegate(Socket socket);
 alias ErrorEventHandler = Action1!(IoError);
 
@@ -70,7 +69,7 @@ final class BaseTypeObject(T) {
 
 
 
-alias WritingBufferQueue = SimpleQueue!Bytes;
+// alias WritingBufferQueue = SimpleQueue!NbuffChunk;
 
 /**
 */
