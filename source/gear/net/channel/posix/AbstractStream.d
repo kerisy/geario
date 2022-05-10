@@ -153,7 +153,7 @@ abstract class AbstractStream : AbstractSocketChannel {
                 {
                     // https://stackoverflow.com/questions/1434451/what-does-connection-reset-by-peer-mean
                     OnDisconnected();
-                    ErrorOccurred(ErrorCode.CONNECTIONEESET , "connection reset by peer");
+                    // ErrorOccurred(ErrorCode.CONNECTIONEESET , "connection reset by peer");
                 }
                 else
                 {
@@ -235,7 +235,7 @@ abstract class AbstractStream : AbstractSocketChannel {
                 if(errno == ECONNRESET) {
                     // https://stackoverflow.com/questions/1434451/what-does-connection-reset-by-peer-mean
                     OnDisconnected();
-                    ErrorOccurred(ErrorCode.CONNECTIONEESET , "connection reset by peer");
+                    // ErrorOccurred(ErrorCode.CONNECTIONEESET , "connection reset by peer");
                 } else if(errno == EPIPE) {
                     // https://stackoverflow.com/questions/6824265/sigpipe-broken-pipe
                     // Handle SIGPIPE signal
