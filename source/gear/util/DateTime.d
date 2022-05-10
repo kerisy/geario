@@ -226,10 +226,6 @@ string Date(string format, long timestamp = 0) {
     return timeString;
 }
 
-
-deprecated("Using DateTime instead.")
-alias DateTimeHelper = DateTime;
-
 /**
  * 
  */
@@ -384,8 +380,6 @@ class DateTime {
     static string GetTimeAsGMT() {
         return cast(string)*timingValue;
     }
-
-    alias GetDateAsGMT = GetTimeAsGMT;
 
     static shared long timestamp;
 
