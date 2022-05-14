@@ -70,7 +70,7 @@ class UdpSocket : AbstractDatagramSocket {
             _binded = true;
         }
 
-        _inLoop.Register(this);
+        _loop.Register(this);
         _isRegistered = true;
         version (HAVE_IOCP)
             DoRead();

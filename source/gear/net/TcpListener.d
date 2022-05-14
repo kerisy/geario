@@ -15,7 +15,13 @@ public import gear.net.TcpStream;
 public import gear.net.TcpStreamOptions;
 public import gear.net.IoError;
 
-import gear.event;
+import gear.net.channel;
+
+import gear.system.Memory : totalCPUs;
+
+import gear.event.EventLoop;
+import gear.event.EventLoopThreadPool;
+import gear.util.ThreadPool;
 import gear.Exceptions;
 import gear.Functions;
 import gear.logging.ConsoleLogger;
@@ -30,14 +36,17 @@ alias AcceptEventHandler = void delegate(TcpListener sender, TcpStream stream);
 alias PeerCreateHandler = TcpStream delegate(TcpListener sender, Socket socket, size_t bufferSize);
 alias EventErrorHandler = void delegate(IoError Error);
 
-
 /**
  * 
  */
-class TcpListener : AbstractListener {
+class TcpListener : AbstractListener
+{
     protected bool _isSslEnabled = false;
     protected bool _isBlocking = false;
     protected bool _isBinded = false;
+
+    protected EventLoopThreadPool _loopThreadPool;
+    protected size_t _ioThreads = 1;
     protected TcpStreamOptions _tcpStreamoption;
     protected EventHandler _shutdownHandler;
 
@@ -49,15 +58,24 @@ class TcpListener : AbstractListener {
 
     private int _backlog = 1024;
 
-    this(EventLoop loop, AddressFamily family = AddressFamily.INET, size_t bufferSize = 1024)
+    this(EventLoop loop = null, AddressFamily family = AddressFamily.INET, size_t bufferSize = 1024)
     {
         _tcpStreamoption = TcpStreamOptions.Create();
         _tcpStreamoption.bufferSize = bufferSize;
+
+        if (loop is null)
+            loop = new EventLoop;
         
         version (HAVE_IOCP)
             super(loop, family, bufferSize);
         else
             super(loop, family);
+    }
+
+    TcpListener Threads(size_t ioThreads = totalCPUs)
+    {
+        _ioThreads = ioThreads < 1 ? 1 : ioThreads;
+        return this;
     }
 
     TcpListener Accepted(AcceptEventHandler handler) {
@@ -155,8 +173,11 @@ class TcpListener : AbstractListener {
 
     override void Start()
     {
+        if (_ioThreads > 1)
+            _loopThreadPool = new EventLoopThreadPool(_ioThreads);
+
         this.socket.listen(_backlog);
-        _inLoop.Register(this);
+        _loop.Register(this);
         _isRegistered = true;
         version (HAVE_IOCP)
             this.DoAccept();
@@ -189,12 +210,15 @@ class TcpListener : AbstractListener {
                 }
 
                 if (acceptHandler !is null) {
-                  TcpStream stream;
-                  if (peerCreateHandler is null) {
-                    stream = new TcpStream(_inLoop, socket, _tcpStreamoption); 
-                  }
-                  else
-                    stream = peerCreateHandler(this, socket, _tcpStreamoption.bufferSize);
+                    TcpStream stream;
+                    if (peerCreateHandler is null) {
+                        if (_ioThreads == 1)
+                            stream = new TcpStream(_loop, socket, _tcpStreamoption);
+                        else
+                            stream = new TcpStream(_loopThreadPool.GetNextLoop(), socket, _tcpStreamoption);
+                    }
+                    else
+                        stream = peerCreateHandler(this, socket, _tcpStreamoption.bufferSize);
 
                   acceptHandler(this, stream);
                   stream.Start();

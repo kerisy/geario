@@ -302,7 +302,7 @@ abstract class TimerChannelBase : AbstractChannel, ITimer {
     }
 
     void Start(bool immediately = false, bool once = false) {
-        _inLoop.Register(this);
+        _loop.Register(this);
         _isRegistered = true;
         _isActive = true;
     }

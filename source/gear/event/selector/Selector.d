@@ -27,7 +27,7 @@ abstract class Selector {
     protected long idleTime = -1; // in millisecond
     protected int fd;
 
-    private long timeout = -1; // in millisecond
+    protected long timeout = -1; // in millisecond
     private Thread _thread;
 
     private SimpleEventHandler _startedHandler;

@@ -25,7 +25,7 @@ abstract class AbstractChannel : Channel {
     protected shared bool _isClosed = false;
 
     this(Selector loop, ChannelType type) {
-        this._inLoop = loop;
+        this._loop = loop;
         _type = type;
         _flags = BitArray([false, false, false, false, false, false, false,
                 false, false, false, false, false, false, false, false, false]);
@@ -86,7 +86,7 @@ abstract class AbstractChannel : Channel {
         version (GEAR_IO_DEBUG)
             Tracef("onClose [fd=%d]...", this.handle);
         _isRegistered = false;
-        _inLoop.Deregister(this);
+        _loop.Deregister(this);
         Clear();
 
         version (GEAR_IO_DEBUG_MORE)
@@ -119,7 +119,7 @@ abstract class AbstractChannel : Channel {
     }
 
     @property Selector eventLoop() {
-        return _inLoop;
+        return _loop;
     }
 
     void SetNext(AbstractChannel next) {
@@ -148,7 +148,7 @@ protected:
         _flags[index] = enable;
     }
 
-    Selector _inLoop;
+    Selector _loop;
 
 private:
     BitArray _flags;

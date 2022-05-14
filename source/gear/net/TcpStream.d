@@ -285,7 +285,7 @@ class TcpStream : AbstractStream {
     override void Start() {
         if (_isRegistered)
             return;
-        _inLoop.Register(this);
+        _loop.Register(this);
         _isRegistered = true;
         version (HAVE_IOCP)
         {

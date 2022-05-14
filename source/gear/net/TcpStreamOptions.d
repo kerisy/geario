@@ -23,13 +23,15 @@ class TcpStreamOptions {
     size_t bufferSize = 1024 * 8;
 
     int retryTimes = 5;
+
     Duration retryInterval = 2.seconds;
 
     this() {
 
     }
 
-    static TcpStreamOptions Create() {
+    static TcpStreamOptions Create()
+    {
         TcpStreamOptions option = new TcpStreamOptions();
         option.isKeepalive = true;
         option.keepaliveTime = 15;
