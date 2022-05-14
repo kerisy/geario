@@ -74,7 +74,7 @@ class TcpListener : AbstractListener
 
     TcpListener Threads(size_t ioThreads = totalCPUs)
     {
-        _ioThreads = ioThreads < 1 ? 1 : ioThreads;
+        _ioThreads = ioThreads > 1 ? ioThreads : 1;
         return this;
     }
 
@@ -99,42 +99,51 @@ class TcpListener : AbstractListener
         return this;
     }
 
-    TcpListener Bind(string ip, ushort port) {
+    TcpListener Bind(string ip, ushort port)
+    {
         return Bind(parseAddress(ip, port));
     }
 
-    TcpListener Bind(ushort port) {
+    TcpListener Bind(ushort port)
+    {
         return Bind(CreateAddress(this.socket.addressFamily, port));
     }
 
-    TcpListener Bind(Address addr) {
-        try {
-        this.socket.setOption(SocketOptionLevel.SOCKET, SocketOption.REUSEADDR, true);
-        this.socket.bind(addr);
-        this.socket.blocking = _isBlocking;
-        _localAddress = _socket.localAddress();
-        _isBinded = true;
-        } catch (SocketOSException e)
+    TcpListener Bind(Address addr)
+    {
+        try
+        {
+            this.socket.setOption(SocketOptionLevel.SOCKET, SocketOption.REUSEADDR, true);
+            this.socket.bind(addr);
+            this.socket.blocking = _isBlocking;
+            _localAddress = _socket.localAddress();
+            _isBinded = true;
+        }
+        catch (SocketOSException e)
         {
             if (errorHandler !is null)
             {
                 this.errorHandler(new IoError(ErrorCode.ADDRINUSE , e.msg));
             }
         }
+
         return this;
     }
 
-    Address BindingAddress() {
+    Address BindingAddress()
+    {
         return _localAddress;
     }
 
-    void Blocking(bool flag) {
+    void Blocking(bool flag)
+    {
         _isBlocking = flag;
         // if(_isBinded)
         this.socket.blocking = flag;
     }
 
-    bool Blocking() {
+    bool Blocking()
+    {
         return _isBlocking;
     }
 
@@ -143,7 +152,8 @@ class TcpListener : AbstractListener
      * https://www.cnblogs.com/xybaby/p/7341579.html
      * https://rextester.com/BUAFK86204
      */
-    TcpListener ReusePort(bool flag) {
+    TcpListener ReusePort(bool flag)
+    {
         if(_isBinded) {
             throw new IOException("Must be set before binding.");
         }
@@ -202,35 +212,36 @@ class TcpListener : AbstractListener
 
             try
             {
-              canRead = OnAccept((Socket socket) {
+                canRead = OnAccept((Socket socket) {
 
-                version (GEAR_DEBUG) {
-                  Infof("new connection from %s, fd=%d",
-                  socket.remoteAddress.toString(), socket.handle());
-                }
-
-                if (acceptHandler !is null) {
-                    TcpStream stream;
-                    if (peerCreateHandler is null) {
-                        if (_ioThreads == 1)
-                            stream = new TcpStream(_loop, socket, _tcpStreamoption);
-                        else
-                            stream = new TcpStream(_loopThreadPool.GetNextLoop(), socket, _tcpStreamoption);
+                    version (GEAR_DEBUG) {
+                        Infof("new connection from %s, fd=%d",
+                        socket.remoteAddress.toString(), socket.handle());
                     }
-                    else
-                        stream = peerCreateHandler(this, socket, _tcpStreamoption.bufferSize);
 
-                  acceptHandler(this, stream);
-                  stream.Start();
+                    if (acceptHandler !is null) {
+                        TcpStream stream;
+                        if (peerCreateHandler is null) {
+                            if (_ioThreads > 1)
+                                stream = new TcpStream(_loopThreadPool.GetNextLoop(), socket, _tcpStreamoption);
+                            else
+                                stream = new TcpStream(_loop, socket, _tcpStreamoption);
+                        }
+                        else
+                            stream = peerCreateHandler(this, socket, _tcpStreamoption.bufferSize);
+
+                        acceptHandler(this, stream);
+                        stream.Start();
+                    }
+                });
+
+                if (this.IsError) {
+                    canRead = false;
+                    gear.logging.ConsoleLogger.Error("listener Error: ", this.ErrorMessage);
+                    this.Close();
                 }
-              });
-
-              if (this.IsError) {
-                canRead = false;
-                gear.logging.ConsoleLogger.Error("listener Error: ", this.ErrorMessage);
-                this.Close();
-              }
-            } catch (SocketOSException e)
+            }
+            catch (SocketOSException e)
             {
                 if (errorHandler !is null)
                 {
