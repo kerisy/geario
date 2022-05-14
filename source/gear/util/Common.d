@@ -1,5 +1,5 @@
 /*
- * Hunt - A refined core library for writing reliable asynchronous applications with D programming language.
+ * Hunt - A cross-platform abstraction library with asynchronous I/O.
  *
  * Copyright (C) 2021-2022 Kerisy.com
  *

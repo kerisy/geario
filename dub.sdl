@@ -1,5 +1,5 @@
 name "gear"
-description "A refined core library for writing reliable asynchronous applications with D programming language."
+description "A cross-platform abstraction library with asynchronous I/O."
 homepage "https://www.kerisy.com"
 copyright "Copyright (C) 2018-2021, HuntLabs"
 license "Apache-2.0"
