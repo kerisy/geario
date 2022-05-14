@@ -31,6 +31,7 @@ __dummy.html
 # Examples
 examples/echo/echo-server
 examples/http/http-server
+examples/threadpool/threadpool
 
 # others
 *-test-*

@@ -1,0 +1,6 @@
+name "threadpool"
+description " ThreadPool exmaple code with Gear."
+copyright "Copyright (C) 2021, Kerisy.com"
+license "Apache-2.0"
+dependency "gear" path="../../"
+targetType "executable"
