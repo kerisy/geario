@@ -1,5 +1,5 @@
 name "threadpool"
-description " ThreadPool exmaple code with Gear."
+description " ThreadPool exmaple code with Geario."
 copyright "Copyright (C) 2021, Kerisy.com"
 license "Apache-2.0"
 dependency "gear" path="../../"

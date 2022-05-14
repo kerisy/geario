@@ -1,7 +1,6 @@
-name "gear"
+name "geario"
 description "A cross-platform abstraction library with asynchronous I/O."
 homepage "https://www.kerisy.com"
-copyright "Copyright (C) 2018-2021, HuntLabs"
 license "Apache-2.0"
 dependency "nbuff" version="~>0.1.14"
 versions "HAVE_EPOLL" platform="android"
@@ -12,3 +11,4 @@ versions "HAVE_KQUEUE" platform="osx"
 versions "HAVE_KQUEUE" platform="netbsd"
 versions "HAVE_IOCP" platform="windows"
 versions "HAVE_KQUEUE" platform="openbsd"
+

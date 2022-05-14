@@ -1,6 +1,6 @@
 module http.codec.HttpEncoder;
 
-import gear.codec.Encoder;
+import geario.codec.Encoder;
 
 import http.HttpRequest;
 import http.HttpResponse;

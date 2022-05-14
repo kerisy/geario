@@ -1,5 +1,5 @@
 /*
- * Gear - A cross-platform abstraction library with asynchronous I/O.
+ * Geario - A cross-platform abstraction library with asynchronous I/O.
  *
  * Copyright (C) 2021-2022 Kerisy.com
  *
@@ -11,15 +11,15 @@
 
 module http.HttpServer;
 
-import gear.buffer.Bytes;
+import geario.buffer.Bytes;
 
-import gear.event;
-import gear.logging.ConsoleLogger;
+import geario.event;
+import geario.logging.ConsoleLogger;
 
-import gear.net.TcpListener;
-import gear.net.TcpStream;
+import geario.net.TcpListener;
+import geario.net.TcpStream;
 
-import gear.codec.Framed;
+import geario.codec.Framed;
 
 import http.codec.HttpCodec;
 

@@ -1,5 +1,5 @@
 name "http-server"
-description "An http server with Gear."
+description "An http server with Geario."
 copyright "Copyright (C) 2021, Kerisy.com"
 license "Apache-2.0"
 dependency "gear" path="../../"

@@ -1,13 +1,13 @@
-[![Build Status](https://travis-ci.org/kerisy/gear.svg?branch=master)](https://travis-ci.org/kerisy/gear)
+[![Build Status](https://travis-ci.org/kerisy/geario.svg?branch=master)](https://travis-ci.org/kerisy/geario)
 
-# Gear Library
+# Geario Library
 A cross-platform abstraction library with asynchronous I/O.
 
 ## Modules
- * gear.net
- * gear.codec
- * gear.event
- * gear.serialization
+ * geario.net
+ * geario.codec
+ * geario.event
+ * geario.serialization
 
 ## Platforms
  * FreeBSD

@@ -1,14 +1,14 @@
 module http.codec.HttpDecoder;
 
-import gear.codec.Decoder;
-import gear.codec.Encoder;
+import geario.codec.Decoder;
+import geario.codec.Encoder;
 
-import gear.event;
+import geario.event;
 
 import http.HttpRequestParser;
 import http.HttpRequest;
 
-import gear.logging;
+import geario.logging;
 
 class HttpDecoder : Decoder!HttpRequest
 {

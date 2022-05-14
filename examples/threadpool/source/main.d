@@ -1,5 +1,5 @@
 
-import gear.util.ThreadPool;
+import geario.util.ThreadPool;
 
 import std.stdio;
 
