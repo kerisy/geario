@@ -127,7 +127,7 @@ abstract class AbstractNativeTimer : ITimer {
     /// once: true to call timed event only once
     abstract void Start(bool immediately = false, bool once = false);
     void Start(uint interval) {
-        this.interval = interval;
+        this.Interval = interval;
         Start();
     }
 
@@ -136,12 +136,12 @@ abstract class AbstractNativeTimer : ITimer {
     abstract void Reset(bool immediately = false, bool once = false);
 
     void Reset(size_t interval) {
-        this.interval = interval;
+        this.Interval = interval;
         Reset();
     }
 
     void Reset(Duration duration) {
-        this.interval = duration;
+        this.Interval = duration;
         Reset();
     }
 
@@ -180,8 +180,8 @@ class NativeTimer : AbstractNativeTimer {
         if (_isActive)
             return;
         BOOL r = CreateTimerQueueTimer(&_handle, null, &timerProc,
-                cast(PVOID) this, immediately ? 0 : cast(int) interval, once ? 0
-                : cast(int) interval, WT_EXECUTEINTIMERTHREAD);
+                cast(PVOID) this, immediately ? 0 : cast(int) Interval, once ? 0
+                : cast(int) Interval, WT_EXECUTEINTIMERTHREAD);
         assert(r != 0);
         _isActive = true;
     }
@@ -196,7 +196,7 @@ class NativeTimer : AbstractNativeTimer {
     override void Reset(bool immediately = false, bool once = false) {
         if (_isActive) {
             assert(ChangeTimerQueueTimer(null, _handle, immediately ? 0
-                    : cast(int) interval, once ? 0 : cast(int) interval) != 0);
+                    : cast(int) Interval, once ? 0 : cast(int) Interval) != 0);
         }
     }
 

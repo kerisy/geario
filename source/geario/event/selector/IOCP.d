@@ -38,7 +38,7 @@ class AbstractSelector : Selector {
         super(number, divider, worker, maxChannels);
         _iocpHandle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, null, 0, 0);
         if (_iocpHandle is null)
-            errorf("CreateIoCompletionPort failed: %d\n", GetLastError());
+            Errorf("CreateIoCompletionPort failed: %d\n", GetLastError());
         _timer.init();
         _stopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
     }
@@ -51,7 +51,7 @@ class AbstractSelector : Selector {
     override bool Register(AbstractChannel channel) {
         super.Register(channel);
 
-        ChannelType ct = channel.type;
+        ChannelType ct = channel.Type;
         auto fd = channel.handle;
         version (GEAR_IO_DEBUG)
             Tracef("register, channel(fd=%d, type=%s)", fd, ct);
@@ -77,7 +77,7 @@ class AbstractSelector : Selector {
         }
 
         auto stream = cast(AbstractStream)channel;
-        if (stream !is null && !stream.IsClient()) {
+        if (stream !is null) {
             stream.BeginRead();
         }
 
@@ -217,7 +217,7 @@ class AbstractSelector : Selector {
 
         // (cast(AbstractStream)channel).setBusyWrite(false);
 
-        if (len == 0 || channel.isClosed) {
+        if (len == 0 || channel.IsClosed) {
             version (GEAR_IO_DEBUG)
                Infof("channel [fd=%d] closed. isClosed: %s, len: %d", channel.handle, channel.isClosed, len);
             //channel.Close();

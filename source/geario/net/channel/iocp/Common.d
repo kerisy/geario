@@ -32,13 +32,13 @@ mixin template CheckIocpError() {
     void checkErro(int ret, int erro = 0) {
         DWORD dwLastError = GetLastError();
         version (GEAR_IO_DEBUG)
-            infof("ret=%d, erro=%d, dwLastError=%d", ret, erro, dwLastError);
+            Infof("ret=%d, erro=%d, dwLastError=%d", ret, erro, dwLastError);
         if (ret != erro || dwLastError == 0)
             return;
 
         if (ERROR_IO_PENDING != dwLastError) { // ERROR_IO_PENDING
             import geario.system.Error;
-            warningf("erro=%d, dwLastError=%d", erro, dwLastError);
+            Warningf("erro=%d, dwLastError=%d", erro, dwLastError);
             this._error = true;
             this._errorMessage = GetErrorMessage(dwLastError); // format("IOCP Error: code=%s", dwLastError);
         }
@@ -108,7 +108,7 @@ private bool GetFunctionPointer(FuncPointer)(SOCKET sock, ref FuncPointer pfn, r
     DWORD dwBytesReturned = 0;
     if (WSAIoctl(sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, guid.sizeof,
             &pfn, pfn.sizeof, &dwBytesReturned, null, null) == SOCKET_ERROR) {
-        error("Get function failed with Error:", GetLastError());
+        Errorf("Get function failed with Error:", GetLastError());
         return false;
     }
 

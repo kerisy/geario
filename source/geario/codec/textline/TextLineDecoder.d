@@ -14,6 +14,7 @@ module geario.codec.textline.TextLineDecoder;
 import nbuff;
 
 import geario.codec.Decoder;
+import geario.logging;
 
 import std.conv : to;
 
@@ -21,21 +22,19 @@ class TextLineDecoder : Decoder!string
 {
     long Decode(ref Nbuff buffer, ref string message)
     {
-        ulong i = 0;
+        ulong n = 0;
 
         foreach ( b; cast(string) buffer.data().data() )
         {
+            n++;
+
             if (b.to!string == "\n")
             {
-                message = cast(string) buffer.data().data()[0 .. i];
-                
-                long n = i + 1;
+                message = cast(string) buffer.data().data()[0 .. n];
                 buffer.pop(n);
 
                 return n;
             }
-
-            i++;
         }
 
         return 0;

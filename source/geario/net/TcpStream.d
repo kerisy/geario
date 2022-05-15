@@ -60,8 +60,6 @@ class TcpStream : AbstractStream {
         this.socket = new Socket(family, SocketType.STREAM, ProtocolType.TCP);
         super(loop, family, _tcpOption.bufferSize);
         version(GEAR_IO_DEBUG) Tracef("buffer size: %d bytes", _tcpOption.bufferSize);
-        
-
     }
 
     // for server
@@ -165,7 +163,7 @@ class TcpStream : AbstractStream {
                 if(super.DoConnect(addr)) {
                     this.socket.blocking = false;
                     SetKeepalive();
-                    _localAddress = this.socket.LocalAddress();
+                    _localAddress = this.socket.localAddress();
                     _isConnected = true;
                 } else {
                     ErrorOccurred(ErrorCode.CONNECTIONEFUSED,"Connection refused");

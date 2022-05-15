@@ -5,7 +5,6 @@ version (HAVE_IOCP) :
 // dfmt on
 
 import geario.event.selector.Selector;
-import geario.buffer.Bytes;
 import geario.net.channel.AbstractSocketChannel;
 import geario.net.channel.ChannelTask;
 import geario.net.channel.Types;
@@ -16,13 +15,14 @@ import geario.event.selector.IOCP;
 import geario.system.Error;
 import geario.util.ThreadHelper;
 import geario.util.worker;
-
+import nbuff;
 import core.atomic;
 import core.sys.windows.windows;
 import core.sys.windows.winsock2;
 import core.sys.windows.mswsock;
 import std.format;
 import std.socket;
+import std.string;
 import core.stdc.string;
 
 /**
@@ -37,9 +37,10 @@ abstract class AbstractStream : AbstractSocketChannel {
     * you would make a copy of it. 
     */
     protected DataReceivedHandler dataReceivedHandler;
+    protected DataSendedHandler dataSendedHandler;
     protected SimpleActionHandler dataWriteDoneHandler;
 
-    protected Bytes _bufferForRead;
+    protected NbuffChunk _bufferForRead;
     protected AddressFamily _family;
 
     private size_t _bufferSize = 4096;
@@ -54,9 +55,10 @@ abstract class AbstractStream : AbstractSocketChannel {
 
         // version (GEAR_IO_DEBUG)
         //     Trace("Buffer size: ", bufferSize);
-        _readBuffer = new ubyte[bufferSize];
+        // _readBuffer = new ubyte[bufferSize];
+        // _readBytes = Nbuff.get(_bufferSize);
         //_bufferForRead = BufferUtils.allocate(bufferSize);
-        _bufferForRead.Clear();
+
         //_readBuffer = cast(ubyte[])_bufferForRead.toString();
         // _writeQueue = new WritingBufferQueue();
         // this.socket = new TcpSocket(family);
@@ -106,7 +108,7 @@ abstract class AbstractStream : AbstractSocketChannel {
             //while(!_isSingleWriteBusy)
             //{
                 this._socket.shutdown(SocketShutdown.BOTH);
-                this._socket.Close();
+                this._socket.close();
             //}
         }
         super.OnClose();
@@ -114,13 +116,15 @@ abstract class AbstractStream : AbstractSocketChannel {
 
     void BeginRead() {
         // https://docs.microsoft.com/en-us/windows/desktop/api/winsock2/nf-winsock2-wsarecv
-
         ///  _isSingleWriteBusy = true;
+        auto b = Nbuff.get(_bufferSize);
+
+        _readBuffer = b.data();
 
         WSABUF _dataReadBuffer;
         _dataReadBuffer.len = cast(uint) _readBuffer.length;
         _dataReadBuffer.buf = cast(char*) _readBuffer.ptr;
-        memset(&_iocpread.overlapped , 0 ,_iocpread.overlapped.sizeof );
+        memset( &_iocpread.overlapped , 0, _iocpread.overlapped.sizeof );
         _iocpread.channel = this;
         _iocpread.operation = IocpOperation.read;
         DWORD dwReceived = 0;
@@ -128,8 +132,7 @@ abstract class AbstractStream : AbstractSocketChannel {
         version (GEAR_IO_DEBUG)
             Tracef("start receiving [fd=%d] ", this.socket.handle);
         // _isSingleWriteBusy = true;
-        int nRet = WSARecv(cast(SOCKET) this.socket.handle, &_dataReadBuffer, 1u, 
-            &dwReceived, &dwFlags, &_iocpread.overlapped, cast(LPWSAOVERLAPPED_COMPLETION_ROUTINE) null);
+        int nRet = WSARecv(cast(SOCKET) this.socket.handle, &_dataReadBuffer, 1u, &dwReceived, &dwFlags, &_iocpread.overlapped, cast(LPWSAOVERLAPPED_COMPLETION_ROUTINE) null);
 
         if (nRet == SOCKET_ERROR && (GetLastError() != ERROR_IO_PENDING)) {
             _isSingleWriteBusy = false;
@@ -141,15 +144,15 @@ abstract class AbstractStream : AbstractSocketChannel {
     protected bool DoConnect(Address addr) {
         Address binded = CreateAddress(this.socket.addressFamily);
         _isSingleWriteBusy = true;
-        this.socket.Bind(binded);
+        this.socket.bind(binded);
         _iocpread.channel = this;
         _iocpread.operation = IocpOperation.connect;
 
         import std.datetime.stopwatch;
         auto sw = StopWatch(AutoStart.yes);
-        sw.Start();
+        sw.start();
         scope(exit) {
-            sw.Stop();
+            sw.stop();
         }
 
         // https://docs.microsoft.com/en-us/windows/win32/api/mswsock/nc-mswsock-lpfn_connectex
@@ -172,7 +175,7 @@ abstract class AbstractStream : AbstractSocketChannel {
         bool result = false;
         if ( iResult != NO_ERROR ) {
             DWORD dwLastError = WSAGetLastError();
-            warningf("getsockopt(SO_CONNECT_TIME) failed with Error: code=%d, message=%s", 
+            Warningf("getsockopt(SO_CONNECT_TIME) failed with Error: code=%d, message=%s", 
                 dwLastError, GetErrorMessage(dwLastError));
         } else {
             if (seconds == 0xFFFFFFFF) {
@@ -238,8 +241,8 @@ abstract class AbstractStream : AbstractSocketChannel {
             Tracef("sent: %d / %d bytes, fd=%d", dwSent, bufferLength, this.handle);
         }
 
-        if (this.isError) {
-            errorf("Socket Error on write: fd=%d, message=%s", this.handle, this.errorMessage);
+        if (this.IsError) {
+            Errorf("Socket Error on write: fd=%d, message=%s", this.handle, this.ErrorMessage);
             this.Close();
         }
 
@@ -257,9 +260,8 @@ abstract class AbstractStream : AbstractSocketChannel {
             // writefln("length=%d, data: %(%02X %)", readLen, _readBuffer[0 .. readLen]);
             HandleReceivedData(readLen);
 
-            if (IsClient()) {
-                this.BeginRead();
-            }
+            // Go on reading
+            this.BeginRead();
 
         } else if (readLen == 0) {
             version (GEAR_IO_DEBUG) {
@@ -290,17 +292,22 @@ abstract class AbstractStream : AbstractSocketChannel {
         // _bufferForRead.position(0);
         // dataReceivedHandler(_bufferForRead);
 
-        Bytes bufferCopy;
-        bufferCopy.opAssign(_bufferForRead);
-        
+        // Bytes bufferCopy;
+        import std.algorithm : copy;
+        auto buffer = Nbuff.get(len);
+        copy((cast(string)_readBuffer[0 .. len]).representation, buffer.data);
+
+        NbuffChunk bytes = NbuffChunk(buffer, len);
+
+        // bufferCopy.opAssign(_bufferForRead);
         if(taskWorker is null) {
-            dataReceivedHandler(bufferCopy);
+            dataReceivedHandler(bytes);
         } else {
             ChannelTask task = _task;
 
             // FIXME: Needing refactor or cleanup -@zhangxueping at 2021-02-05T09:18:02+08:00
             // More tests needed
-            if(task is null || task.isFinishing()) {
+            if(task is null || task.IsFinishing()) {
                 task = CreateChannelTask();
                 _task = task;
 
@@ -310,9 +317,8 @@ abstract class AbstractStream : AbstractSocketChannel {
                 }
             }
 
-            task.put(bufferCopy);
+            task.put(bytes);
         }        
-
     }
 
     private ChannelTask CreateChannelTask() {
@@ -326,7 +332,7 @@ abstract class AbstractStream : AbstractSocketChannel {
     protected size_t TryWrite(const ubyte[] data) {        
         version (GEAR_IO_DEBUG)
             Tracef("start to write, total=%d bytes, fd=%d", data.length, this.handle);
-        clearerror();
+        ClearError();
         size_t nBytes;
         //scope(exit) {
         //    _isSingleWriteBusy = false;
@@ -343,10 +349,10 @@ abstract class AbstractStream : AbstractSocketChannel {
     private void TryNextBufferWrite() {
         if(CheckAllWriteDone()){
             _isSingleWriteBusy = false;
-            if (!IsClient())
-            {
-                this.BeginRead();
-            }
+            // if (!IsClient())
+            // {
+            //     this.BeginRead();
+            // }
             return;
         } 
         
@@ -360,32 +366,29 @@ abstract class AbstractStream : AbstractSocketChannel {
         //    _isSingleWriteBusy = false;
         //}
 
-        clearerror();
+        ClearError();
 
-        bool haveBuffer = _writeQueue.TryDequeue(writeBytes);
-        if(haveBuffer) {
-            WriteBufferRemaining();
-        } else {
-            version (GEAR_IO_DEBUG)
-                Warning("No buffer in queue");
-        }
+        // bool haveBuffer = _writeQueue.TryDequeue(writeBytes);
+        writeBytes = _senddingBuffer.frontChunk();
+        _senddingBuffer.popChunk();
+        WriteBufferRemaining();
     }
 
     private void WriteBufferRemaining() {
-        if (writeBytes is null )
+        if ( writeBytes.empty() )
         {
             return;
         }
-        const(ubyte)[] data = cast(const(ubyte)[])writeBytes.peekRemaining();
+        const(ubyte)[] data = cast(const(ubyte)[])writeBytes.data();
 
         size_t nBytes = DoWrite(data);
 
         version (GEAR_IO_DEBUG)
             Tracef("written data: %d bytes, fd=%d", nBytes, this.handle);
         if(nBytes == data.length) {
-            writeBytes = null;
+            writeBytes.popBackN(writeBytes.length);
         } else if (nBytes > 0) { 
-            writeBytes.nextGetIndex(cast(int)nBytes);
+            writeBytes.popFrontN(nBytes);
             version (GEAR_IO_DEBUG)
                 Warningf("remaining data: %d / %d, fd=%d", data.length - nBytes, data.length, this.handle);
         } else { 
@@ -394,27 +397,35 @@ abstract class AbstractStream : AbstractSocketChannel {
         }   
     }
     
-    protected bool CheckAllWriteDone() {
-        if(_writeQueue is null || (_writeQueue.IsEmpty() && writeBytes is null)) {
-            ResetWriteStatus();        
+    protected bool CheckAllWriteDone()
+    {
+        if ( _senddingBuffer.empty() && writeBytes.empty() )
+        {
+            ResetWriteStatus();
+
             version (GEAR_IO_DEBUG)
                 Tracef("All data are written out. fd=%d", this.handle);
+
             if(dataWriteDoneHandler !is null)
                 dataWriteDoneHandler(this);
+
             return true;
         }
 
         return false;
     }
     
-    void ResetWriteStatus() {
-        if(_writeQueue !is null)
-            _writeQueue.Clear();
+    void ResetWriteStatus()
+    {
+        if(!_senddingBuffer.empty())
+            _senddingBuffer.clear();
+
         _isWritting = false;
         _isWriteCancelling = false;
         sendDataBuffer = null;
         sendDataBackupBuffer = null;
-        writeBytes = null;
+        if (!writeBytes.empty())
+            writeBytes.popBackN(writeBytes.length);
         _isSingleWriteBusy = false;
     }
 
@@ -444,7 +455,7 @@ abstract class AbstractStream : AbstractSocketChannel {
                  nBytes, _isWritting, writeBytes is null, this.handle);
         }
 
-        if (writeBytes !is null && writeBytes.HasRemaining()) {
+        if (!writeBytes.empty()) {
             version (GEAR_IO_DEBUG) Tracef("try to write the remaining in buffer.");
             WriteBufferRemaining();
         }  else {
@@ -454,11 +465,10 @@ abstract class AbstractStream : AbstractSocketChannel {
     }
 
     private void NotifyDataWrittenDone() {
-        if(dataWriteDoneHandler !is null && _writeQueue.IsEmpty()) {
+        if(dataWriteDoneHandler !is null && _senddingBuffer.empty) {
             dataWriteDoneHandler(this);
         }
     }
- 
     
     DataReceivedHandler GetDataReceivedHandler() {
         return dataReceivedHandler;
@@ -472,20 +482,22 @@ abstract class AbstractStream : AbstractSocketChannel {
     abstract protected void OnDisconnected();
 
     protected void InitializeWriteQueue() {
-        if (_writeQueue is null) {
-            _writeQueue = new WritingBufferQueue();
-        }
+        // if (_writeQueue is null) {
+        //     _writeQueue = new WritingBufferQueue();
+        // }
     }
 
     SimpleEventHandler disconnectionHandler;
     
-    protected WritingBufferQueue _writeQueue;
+    // protected WritingBufferQueue _writeQueue;
+    protected Nbuff _senddingBuffer;
     protected bool _isWriteCancelling = false;
     private  bool _isSingleWriteBusy = false; // keep a single I/O write operation atomic
-    private const(ubyte)[] _readBuffer;
+    private NbuffChunk _readBytes;
+    private ubyte[] _readBuffer;
     private const(ubyte)[] sendDataBuffer;
     private const(ubyte)[] sendDataBackupBuffer;
-    private Bytes writeBytes; 
+    private NbuffChunk writeBytes; 
 
     private IocpContext _iocpread;
     private IocpContext _iocpwrite;

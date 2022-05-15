@@ -43,7 +43,7 @@ abstract class AbstractDatagramSocket : AbstractSocketChannel {
         if (_binded)
             return;
         _bindAddress = addr;
-        socket.Bind(_bindAddress);
+        socket.bind(_bindAddress);
         _binded = true;
     }
 
@@ -57,7 +57,7 @@ abstract class AbstractDatagramSocket : AbstractSocketChannel {
 
     override void Start() {
         if (!_binded) {
-            socket.Bind(_bindAddress);
+            socket.bind(_bindAddress);
             _binded = true;
         }
     }
@@ -113,7 +113,7 @@ abstract class AbstractDatagramSocket : AbstractSocketChannel {
                 this._readBuffer.data = data;
             read(this._readBuffer);
             this._readBuffer.data = data;
-            if (this.isRegistered)
+            if (this.IsRegistered)
                 this.DoRead();
         }
         return false;

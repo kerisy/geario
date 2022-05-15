@@ -37,7 +37,7 @@ abstract class AbstractListener : AbstractSocketChannel {
     protected void DoAccept() {
         _iocp.channel = this;
         _iocp.operation = IocpOperation.accept;
-        _clientSocket = new Socket(this.localAddress.addressFamily,
+        _clientSocket = new Socket(this.LocalAddress.addressFamily,
                 SocketType.STREAM, ProtocolType.TCP);
         DWORD dwBytesReceived = 0;
 
@@ -72,7 +72,7 @@ abstract class AbstractListener : AbstractSocketChannel {
 
         version (GEAR_DEBUG)
             Trace("accepting next connection...");
-        if (this.isRegistered)
+        if (this.IsRegistered)
             this.DoAccept();
         return true;
     }

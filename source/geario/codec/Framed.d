@@ -74,7 +74,7 @@ class Framed(DT, ET)
 
             if (result == 0)
             {
-                Warningf("waiting data ..");
+                // Warningf("waiting data ..");
                 break;
             }
         }
