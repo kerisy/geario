@@ -44,7 +44,7 @@ final class EventLoop : AbstractSelector
 
     void StartLoop()
     {
-        OnLoop(timeout);
+        Run(timeout);
     }
     
     override void Stop() {
