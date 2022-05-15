@@ -28,13 +28,16 @@ class TextLineDecoder : Decoder!string
             if (b.to!string == "\n")
             {
                 message = cast(string) buffer.data().data()[0 .. i];
-                buffer.pop(i + 1);
-                break;
+                
+                long n = i + 1;
+                buffer.pop(n);
+
+                return n;
             }
 
             i++;
         }
 
-        return i;
+        return 0;
     }
 }
