@@ -14,7 +14,7 @@ module geario.event.timer.Common;
 import geario.event.selector.Selector;
 import geario.net.channel.AbstractChannel;
 import geario.net.channel.Types;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 import geario.Exceptions;
 
 import std.datetime;
@@ -231,7 +231,7 @@ struct CustomTimer {
 
     int doWheel() {
         auto nowTime = (Clock.currStdTime() / 10000);
-        // Tracef("nowTime - _nextTime = %d", nowTime - _nextTime);
+        // log.trace("nowTime - _nextTime = %d", nowTime - _nextTime);
         while (nowTime >= _nextTime) {
             _timeWheel.prevWheel();
             _nextTime += CustomTimerMinTimeOut;

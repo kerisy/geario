@@ -18,7 +18,7 @@ import geario.codec.Codec;
 import geario.net.TcpStream;
 import geario.net.channel.Types;
 
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 alias FrameHandle(DT) = void delegate(DT bufer);
 
@@ -49,6 +49,7 @@ class Framed(DT, ET)
 
     private void Received(NbuffChunk bytes)
     {
+        // log.trace(cast(string) bytes.data());
         _receivedBuffer.append(bytes);
 
         while (true)
@@ -57,7 +58,7 @@ class Framed(DT, ET)
             long result = _codec.decoder().Decode(_receivedBuffer, message);
             if (result == -1)
             {
-                Errorf("decode error, close the connection.");
+                log.error("decode error, close the connection.");
                 _connection.Close();
                 break;
             }
@@ -74,7 +75,7 @@ class Framed(DT, ET)
 
             if (result == 0)
             {
-                // Warningf("waiting data ..");
+                // log.warning("waiting data ..");
                 break;
             }
         }
@@ -84,7 +85,7 @@ class Framed(DT, ET)
     {
         // if (_sendBuffer.length() >= n)
         // {
-        //     version(GEAR_IO_DEBUG) Tracef("Pop bytes: %d", n);
+        //     version(GEAR_IO_DEBUG) log.trace("Pop bytes: %d", n);
 
         //     _sendBuffer.pop(n);
         // }
@@ -107,7 +108,7 @@ class Framed(DT, ET)
     {
         NbuffChunk bytes = _codec.encoder().Encode(message);
 
-        version(GEAR_IO_DEBUG) Tracef("Sending bytes: %d", bytes.length());
+        version(GEAR_IO_DEBUG) log.trace("Sending bytes: %d", bytes.length());
 
         _connection.Write(bytes);
     }

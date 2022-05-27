@@ -13,7 +13,7 @@ module geario.event.EventLoop;
 
 import geario.event.selector;
 import geario.net.channel.Types;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 import geario.util.worker;
 
 import core.thread;
@@ -50,14 +50,14 @@ final class EventLoop : AbstractSelector
     override void Stop() {
         if(IsStopping()) {
             version (GEAR_IO_DEBUG) 
-            Warningf("The event loop %d is stopping.", GetId());
+            log.warning("The event loop %d is stopping.", GetId());
             return;
         }
         
         version (GEAR_IO_DEBUG) 
-        Tracef("Stopping event loop %d...", GetId());
+        log.trace("Stopping event loop %d...", GetId());
         if(IsSelfThread()) {
-            version (GEAR_IO_DEBUG) Infof("Try to stop the event loop %d in another thread", GetId());
+            version (GEAR_IO_DEBUG) log.info("Try to stop the event loop %d in another thread", GetId());
             auto stopTask = task(&Stop);
             std.parallelism.taskPool.put(stopTask);
         } else {

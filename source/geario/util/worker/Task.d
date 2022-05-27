@@ -1,7 +1,7 @@
 module geario.util.worker.Task;
 
 import geario.util.queue;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 import core.atomic;
 import std.datetime;
@@ -73,20 +73,20 @@ abstract class Task {
     void Stop() {
         
         version(GEAR_IO_DEBUG) {
-            Tracef("The task status: %s", _status);
+            log.trace("The task status: %s", _status);
         }
 
         if(!cas(&_status, TaskStatus.Processing, TaskStatus.Terminated) && 
             !cas(&_status, TaskStatus.Ready, TaskStatus.Terminated)) {
             version(GEAR_IO_DEBUG) {
-                Warningf("The task status: %s", _status);
+                log.warning("The task status: %s", _status);
             }
         }
     }
 
     void Finish() {
         version(GEAR_IO_DEBUG) {
-            Tracef("The task status: %s", _status);
+            log.trace("The task status: %s", _status);
         }
 
         if(cas(&_status, TaskStatus.Processing, TaskStatus.Done) || 
@@ -94,12 +94,12 @@ abstract class Task {
                 
             _endTime = MonoTime.currTime;
             version(GEAR_IO_DEBUG) {
-                Infof("The task done.");
+                log.info("The task done.");
             }
         } else {
             version(GEAR_IO_DEBUG) {
-                Warningf("The task status: %s", _status);
-                Warningf("Failed to set the task status to Done: %s", _status);
+                log.warning("The task status: %s", _status);
+                log.warning("Failed to set the task status to Done: %s", _status);
             }
         }
     }
@@ -109,7 +109,7 @@ abstract class Task {
     void Execute() {
         if(cas(&_status, TaskStatus.Ready, TaskStatus.Processing)) {
             version(GEAR_IO_DEBUG) {
-                Tracef("Task %d executing... status: %s", id, _status);
+                log.trace("Task %d executing... status: %s", id, _status);
             }
             _startTime = MonoTime.currTime;
             scope(exit) {
@@ -120,7 +120,7 @@ abstract class Task {
             }
             DoExecute();
         } else {
-            Warningf("Failed to Execute task %d. Its status is: %s", id, _status);
+            log.warning("Failed to Execute task %d. Its status is: %s", id, _status);
         }
     }
 

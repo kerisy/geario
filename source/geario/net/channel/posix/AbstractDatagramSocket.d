@@ -8,7 +8,7 @@ import geario.event.selector.Selector;
 import geario.Functions;
 import geario.net.channel.AbstractSocketChannel;
 import geario.net.channel.Types;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 import std.socket;
 
@@ -71,6 +71,6 @@ abstract class AbstractDatagramSocket : AbstractSocketChannel {
 
     override void OnWrite() {
         version (GEAR_DEBUG)
-            Tracef("try to write [fd=%d]", this.handle);
+            log.trace("try to write [fd=%d]", this.handle);
     }
 }

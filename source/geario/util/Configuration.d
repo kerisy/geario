@@ -89,7 +89,7 @@ T as(T = string)(string value, T v = T.init) {
         }
         return r;
     } else {
-        Infof("T:%s, %s", T.stringof, value);
+        log.info("T:%s, %s", T.stringof, value);
         return cast(T) value;
     }
 }
@@ -104,7 +104,7 @@ class ConfigurationItem {
     ConfigurationItem parent;
 
     this(string name, string parentPath = "") {
-        // version(GEAR_CONFIG_DEBUG) Tracef("new item: %s, parent: %s", name, parentPath);
+        // version(GEAR_CONFIG_DEBUG) log.trace("new item: %s, parent: %s", name, parentPath);
         _name = name;
     }
 
@@ -117,7 +117,7 @@ class ConfigurationItem {
             else
                 path = path ~ "." ~ name;
             // throw new EmptyValueException(format("The item for '%s' is undefined! ", path));
-            Warningf("The items for '%s' is undefined! Use the defaults now", path);
+            log.warning("The items for '%s' is undefined! Use the defaults now", path);
         }
         return v;
     }
@@ -139,7 +139,7 @@ class ConfigurationItem {
             else
                 path = path ~ "." ~ name;
             // throw new EmptyValueException(format("The items for '%s' is undefined! ", path));
-            Warningf("The items for '%s' is undefined! Use the defaults now", path);
+            log.warning("The items for '%s' is undefined! Use the defaults now", path);
         }
         return r;
     }
@@ -308,7 +308,7 @@ class ConfigBuilder {
     void SetValue(string key, string value) {
 
         version (GEAR_CONFIG_DEBUG)
-            Tracef("setting item: key=%s, value=%s", key, value);
+            log.trace("setting item: key=%s, value=%s", key, value);
         _itemMap[key] = value;
 
         string currentPath;
@@ -319,7 +319,7 @@ class ConfigBuilder {
                 continue;
 
             if (canFind(reservedWords, str)) {
-                version (GEAR_CONFIG_DEBUG) Warningf("Found a reserved word: %s. It may cause some errors.", str);
+                version (GEAR_CONFIG_DEBUG) log.warning("Found a reserved word: %s. It may cause some errors.", str);
             }
 
             if (currentPath.empty)
@@ -328,14 +328,14 @@ class ConfigBuilder {
                 currentPath = currentPath ~ "." ~ str;
 
             // version (GEAR_CONFIG_DEBUG)
-            //     Tracef("checking node: path=%s", currentPath);
+            //     log.trace("checking node: path=%s", currentPath);
             ConfigurationItem tvalue = cvalue._map.get(str, null);
             if (tvalue is null) {
                 tvalue = new ConfigurationItem(str);
                 tvalue._fullPath = currentPath;
                 cvalue.ApppendChildNode(str, tvalue);
                 version (GEAR_CONFIG_DEBUG)
-                    Tracef("new node: key=%s, parent=%s, node=%s", key, cvalue.FullPath, str);
+                    log.trace("new node: key=%s, parent=%s, node=%s", key, cvalue.FullPath, str);
             }
             cvalue = tvalue;
         }
@@ -351,7 +351,7 @@ class ConfigBuilder {
         } else static if (hasUDA!(T, Configuration)) {
             enum string name = getUDAs!(T, Configuration)[0].name;
             // pragma(msg,  "node name: " ~ name);
-            // Warning("node name: ", name);
+            // log.warning("node name: ", name);
             static if (!name.empty) {
                 return BuildItem!(T)(this.SubItem(name));
             } else {
@@ -434,14 +434,14 @@ class ConfigBuilder {
                             ConfigurationItem[] items = %5$s.SubItems("%1$s");
                             %3$s tempValues;
                             foreach(ConfigurationItem it; items) {
-                                // version (GEAR_CONFIG_DEBUG) Tracef("name:%%s, value:%%s", it.name, item.value);
+                                // version (GEAR_CONFIG_DEBUG) log.trace("name:%%s, value:%%s", it.name, item.value);
                                 tempValues ~= BuildItem!(%6$s)(it); // it.as!(%6$s)();
                             }
                             %4$s.%2$s = tempValues;
                         } else {
-                            version (GEAR_CONFIG_DEBUG) Warningf("Undefined item: %%s.%1$s" , %5$s.FullPath);
+                            version (GEAR_CONFIG_DEBUG) log.warning("Undefined item: %%s.%1$s" , %5$s.FullPath);
                         }                        
-                        version (GEAR_CONFIG_DEBUG) Tracef("%4$s.%2$s=%%s", %4$s.%2$s);
+                        version (GEAR_CONFIG_DEBUG) log.trace("%4$s.%2$s=%%s", %4$s.%2$s);
 
                     }.format(settingItemName, memberName,
                             memberTypeString, returnParameter, incomingParameter, T.stringof);
@@ -453,9 +453,9 @@ class ConfigBuilder {
                         if(%5$s.Exists("%1$s")) {
                             %4$s.%2$s = %5$s.SubItem("%1$s").as!(%3$s)();
                         } else {
-                            version (GEAR_CONFIG_DEBUG) Warningf("Undefined item: %%s.%1$s" , %5$s.FullPath);
+                            version (GEAR_CONFIG_DEBUG) log.warning("Undefined item: %%s.%1$s" , %5$s.FullPath);
                         }                        
-                        version (GEAR_CONFIG_DEBUG) Tracef("%4$s.%2$s=%%s", %4$s.%2$s);
+                        version (GEAR_CONFIG_DEBUG) log.trace("%4$s.%2$s=%%s", %4$s.%2$s);
 
                     }.format(settingItemName, memberName,
                             memberTypeString, returnParameter, incomingParameter);
@@ -482,10 +482,10 @@ class ConfigBuilder {
                     if(%5$s.Exists("%1$s")) {
                         %4$s.%2$s(%5$s.SubItem("%1$s").as!(%3$s)());
                     } else {
-                        version (GEAR_CONFIG_DEBUG) Warningf("Undefined item: %%s.%1$s" , %5$s.FullPath);
+                        version (GEAR_CONFIG_DEBUG) log.warning("Undefined item: %%s.%1$s" , %5$s.FullPath);
                     }
                     
-                    version (GEAR_CONFIG_DEBUG) Tracef("%4$s.%2$s=%%s", %4$s.%2$s);
+                    version (GEAR_CONFIG_DEBUG) log.trace("%4$s.%2$s=%%s", %4$s.%2$s);
                     }.format(settingItemName, memberName,
                         parameterType.stringof, returnParameter, incomingParameter);
             }
@@ -518,12 +518,12 @@ class ConfigBuilder {
         string r = q{
             import %1$s;
             
-            // Tracef("%5$s.%3$s is a class/struct.");
+            // log.trace("%5$s.%3$s is a class/struct.");
             if(%6$s.Exists("%2$s")) {
                 %5$s.%3$s = BuildItem!(%4$s)(%6$s.SubItem("%2$s"));
             }
             else {
-                version (GEAR_CONFIG_DEBUG) Warningf("Undefined item: %%s.%2$s" , %6$s.FullPath);
+                version (GEAR_CONFIG_DEBUG) log.warning("Undefined item: %%s.%2$s" , %6$s.FullPath);
             }
         }.format(memberModuleName, newSettingItemName,
                 memberName, fullTypeName, returnParameter, incomingParameter);

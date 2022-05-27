@@ -12,7 +12,7 @@ module geario.util.Common;
 
 import geario.util.Runnable;
 
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 
 /**

@@ -1,7 +1,7 @@
 module geario.system.Locale;
 
 import geario.Functions;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 import core.stdc.locale;
 import std.format;

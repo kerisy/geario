@@ -16,7 +16,7 @@ import geario.util.ResoureManager;
 import geario.util.worker.Task;
 import geario.util.worker.Worker;
 
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 import core.atomic;
 import core.memory;
@@ -91,7 +91,7 @@ class WorkerThread : Thread {
 
         if (r) {
             version(GEAR_IO_DEBUG) {
-                Infof("attatching task %d with thread %s", task.id, this.name);
+                log.info("attatching task %d with thread %s", task.id, this.name);
             }
 
             _mutex.lock();
@@ -102,36 +102,36 @@ class WorkerThread : Thread {
             _condition.notify();
             
         } else {
-            Warningf("%s is unavailable. state: %s", this.name(), _state);
+            log.warning("%s is unavailable. state: %s", this.name(), _state);
         }
 
         return r;
     }
 
-    private void Run() nothrow {
+    private void Run() {
         while (_state != WorkerThreadState.Stopped) {
 
             scope (exit) {
                 version (GEAR_IO_DEBUG) {
-                    Tracef("%s Done. state: %s", this.name(), _state);
+                    log.trace("%s Done. state: %s", this.name(), _state);
                 }
 
                 CollectResoure();
                 _task = null;
                 bool r = cas(&_state, WorkerThreadState.Busy, WorkerThreadState.Idle);
                 if(!r) {
-                    Warningf("Failed to set thread %s to Idle, its state is %s", this.name, _state);
+                    log.warning("Failed to set thread %s to Idle, its state is %s", this.name, _state);
                 }
             } 
 
             try {
                 DoRun();
             } catch (Throwable ex) {
-                Warning(ex);
+                log.warning(ex);
             } 
         }
         
-        version (GEAR_DEBUG) Tracef("%s Stopped. state: %s", this.name(), _state);
+        version (GEAR_DEBUG) log.trace("%s Stopped. state: %s", this.name(), _state);
     }
 
     private bool _isWaiting = false;
@@ -147,9 +147,9 @@ class WorkerThread : Thread {
             version(GEAR_IO_DEBUG) {
                 if(!r && _state == WorkerThreadState.Busy) {
                     if(task is null) {
-                        Warningf("No task attatched on a busy thread %s in %s, task: %s", this.name, _timeout);
+                        log.warning("No task attatched on a busy thread %s in %s, task: %s", this.name, _timeout);
                     } else {
-                        Warningf("more tests need for this status, thread %s in %s", this.name, _timeout);
+                        log.warning("more tests need for this status, thread %s in %s", this.name, _timeout);
                     }
                 }
             }
@@ -159,7 +159,7 @@ class WorkerThread : Thread {
 
         if(task !is null) {
             version(GEAR_IO_DEBUG) {
-                Tracef("Try to exeucte task %d in thread %s, its status: %s", task.id, this.name, task.Status);
+                log.trace("Try to exeucte task %d in thread %s, its status: %s", task.id, this.name, task.Status);
             }
             task.Execute();
         }

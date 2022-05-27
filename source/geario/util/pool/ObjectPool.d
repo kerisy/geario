@@ -3,7 +3,7 @@ module geario.util.pool.ObjectPool;
 import geario.concurrency.Future;
 import geario.concurrency.Promise;
 import geario.concurrency.FuturePromise;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 import core.sync.mutex;
 
@@ -112,7 +112,7 @@ class ObjectPool(T) {
             if(r is null) {
                 _waiters.stableInsert(promise);
                 version(GEAR_DEBUG) {
-                    Warningf("New waiter...%d", GetNumWaiters());
+                    log.warning("New waiter...%d", GetNumWaiters());
                 }
             } else {
                 promise.Succeeded(r);
@@ -120,7 +120,7 @@ class ObjectPool(T) {
         } else {
             _waiters.stableInsert(promise);
             version(GEAR_DEBUG) {
-                Warningf("New waiter...%d", GetNumWaiters());
+                log.warning("New waiter...%d", GetNumWaiters());
             }
         }
 
@@ -147,7 +147,7 @@ class ObjectPool(T) {
                 if(!isValid) {
                     pooledObj.Invalidate();
                     version(GEAR_DEBUG) {
-                        Warningf("An invalid object (id=%d) detected at slot %d.", pooledObj.Id(), index);
+                        log.warning("An invalid object (id=%d) detected at slot %d.", pooledObj.Id(), index);
                     }
                     _factory.DestroyObject(underlyingObj);
                     underlyingObj = _factory.MakeObject();
@@ -158,7 +158,7 @@ class ObjectPool(T) {
             } else if(pooledObj.IsInvalid()) {
                 T underlyingObj = pooledObj.GetObject();
                 version(GEAR_DEBUG) {
-                    Warningf("An invalid object (id=%d) detected at slot %d.", pooledObj.Id(), index);
+                    log.warning("An invalid object (id=%d) detected at slot %d.", pooledObj.Id(), index);
                 }
                 _factory.DestroyObject(underlyingObj);
                 underlyingObj = _factory.MakeObject();
@@ -172,7 +172,7 @@ class ObjectPool(T) {
         
         if(pooledObj is null) {
             version(GEAR_DEBUG) {
-                Warning("No idle object avaliable.");
+                log.warning("No idle object avaliable.");
             }
             return null;
         }
@@ -180,7 +180,7 @@ class ObjectPool(T) {
         pooledObj.Allocate();
 
         version(GEAR_DEBUG) {
-            Infof("borrowed: id=%d, createTime=%s; pool status = { %s }", 
+            log.info("borrowed: id=%d, createTime=%s; pool status = { %s }", 
                 pooledObj.Id(), pooledObj.CreateTime(), toString()); 
         }
         return pooledObj.GetObject();        
@@ -195,7 +195,7 @@ class ObjectPool(T) {
      */
     void ReturnObject(T obj) {
         if(obj is null) {
-            version(GEAR_DEBUG) Warning("Do nothing for a null object");
+            version(GEAR_DEBUG) log.warning("Do nothing for a null object");
             return;
         }
 
@@ -223,7 +223,7 @@ class ObjectPool(T) {
             T underlyingObj = pooledObj.GetObject();
             if(underlyingObj is obj) {
                 version(GEAR_DEBUG_MORE) {
-                    Tracef("returning: id=%d, state=%s, count=%s, createTime=%s", 
+                    log.trace("returning: id=%d, state=%s, count=%s, createTime=%s", 
                         pooledObj.Id(), pooledObj.State(), pooledObj.BorrowedCount(), pooledObj.CreateTime()); 
                 }
                     
@@ -231,9 +231,9 @@ class ObjectPool(T) {
                 result = pooledObj.Deallocate();
                 version(GEAR_DEBUG) {
                     if(result) {
-                        Infof("Returned: id=%d", pooledObj.Id());
+                        log.info("Returned: id=%d", pooledObj.Id());
                     } else {
-                        Warningf("Return failed: id=%d", pooledObj.Id());
+                        log.warning("Return failed: id=%d", pooledObj.Id());
                     }
                 }
                 break;
@@ -265,13 +265,13 @@ class ObjectPool(T) {
         // 
         T r = DoBorrow();
         if(r is null) {
-            Warning("No idle object avaliable for waiter");
+            log.warning("No idle object avaliable for waiter");
         } else {
             _waiters.removeFront();
             try {
                 waiter.Succeeded(r);
             } catch(Exception ex) {
-                Warning(ex);
+                log.warning(ex);
             }
         }
     }
@@ -346,7 +346,7 @@ class ObjectPool(T) {
 
             if(obj !is null) {
                 version(GEAR_DEBUG) {
-                    Tracef("clearing object: id=%d, slot=%d", obj.Id(), index);
+                    log.trace("clearing object: id=%d, slot=%d", obj.Id(), index);
                 }
 
                 _pooledObjects[index] = null;
@@ -381,7 +381,7 @@ class ObjectPool(T) {
 
             if(obj !is null) {
                 version(GEAR_DEBUG) {
-                    Tracef("destroying object: id=%d, slot=%d", obj.Id(), index);
+                    log.trace("destroying object: id=%d, slot=%d", obj.Id(), index);
                 }
 
                 _pooledObjects[index] = null;

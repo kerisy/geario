@@ -76,28 +76,26 @@ class UdpSocket : AbstractDatagramSocket {
             DoRead();
     }
 
-    protected override void OnRead() nothrow {
-        catchAndLogException(() {
-            bool canRead = true;
-            while (canRead && _isRegistered) {
-                version (GEAR_IO_DEBUG)
-                    Trace("reading data...");
-                canRead = tryRead((Object obj) nothrow{
-                    collectException(() {
-                        UdpDataObject data = cast(UdpDataObject) obj;
-                        if (data !is null) {
-                            _receivedHandler(data.data, data.addr);
-                        }
-                    }());
-                });
+    protected override void OnRead() {
+        bool canRead = true;
+        while (canRead && _isRegistered) {
+            version (GEAR_IO_DEBUG)
+                log.trace("reading data...");
+            canRead = tryRead((Object obj) {
+                collectException(() {
+                    UdpDataObject data = cast(UdpDataObject) obj;
+                    if (data !is null) {
+                        _receivedHandler(data.data, data.addr);
+                    }
+                }());
+            });
 
-                if (this.IsError) {
-                    canRead = false;
-                    this.Close();
-                    LogError("UDP socket Error: ", this.ErrorMessage);
-                }
+            if (this.IsError) {
+                canRead = false;
+                this.Close();
+                log.error("UDP socket Error: ", this.ErrorMessage);
             }
-        }());
+        }
     }
 
 }

@@ -8,7 +8,7 @@ import geario.event.selector.Selector;
 import geario.net.channel.AbstractSocketChannel;
 import geario.net.channel.Types;
 import geario.net.channel.iocp.Common;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 import geario.Functions;
 
 import core.sys.windows.windows;

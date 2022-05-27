@@ -9,7 +9,7 @@ import geario.net.channel.AbstractSocketChannel;
 import geario.net.channel.ChannelTask;
 import geario.net.channel.Types;
 import geario.net.channel.iocp.Common;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 import geario.Functions;
 import geario.event.selector.IOCP;
 import geario.system.Error;
@@ -81,15 +81,15 @@ abstract class AbstractStream : AbstractSocketChannel {
      */
     override void OnWrite() {  
         version (GEAR_IO_DEBUG)
-            Tracef("checking write status, isWritting: %s, writeBytes: %s", _isWritting, writeBytes is null);
+            log.trace("checking write status, isWritting: %s, writeBytes: %s", _isWritting, writeBytes is null);
 
         //if(!_isWritting){
-        //    version (GEAR_IO_DEBUG) Infof("No data to write out. fd=%d", this.handle);
+        //    version (GEAR_IO_DEBUG) log.info("No data to write out. fd=%d", this.handle);
         //    return;
         //}
 
         if(IsClosing() && _isWriteCancelling) {
-            version (GEAR_IO_DEBUG) Infof("Write cancelled, fd=%d", this.handle);
+            version (GEAR_IO_DEBUG) log.info("Write cancelled, fd=%d", this.handle);
             ResetWriteStatus();
             return;
         }
@@ -130,7 +130,7 @@ abstract class AbstractStream : AbstractSocketChannel {
         DWORD dwReceived = 0;
         DWORD dwFlags = 0;
         version (GEAR_IO_DEBUG)
-            Tracef("start receiving [fd=%d] ", this.socket.handle);
+            log.trace("start receiving [fd=%d] ", this.socket.handle);
         // _isSingleWriteBusy = true;
         int nRet = WSARecv(cast(SOCKET) this.socket.handle, &_dataReadBuffer, 1u, &dwReceived, &dwFlags, &_iocpread.overlapped, cast(LPWSAOVERLAPPED_COMPLETION_ROUTINE) null);
 
@@ -175,18 +175,18 @@ abstract class AbstractStream : AbstractSocketChannel {
         bool result = false;
         if ( iResult != NO_ERROR ) {
             DWORD dwLastError = WSAGetLastError();
-            Warningf("getsockopt(SO_CONNECT_TIME) failed with Error: code=%d, message=%s", 
+            log.warning("getsockopt(SO_CONNECT_TIME) failed with Error: code=%d, message=%s", 
                 dwLastError, GetErrorMessage(dwLastError));
         } else {
             if (seconds == 0xFFFFFFFF) {
-                version(GEAR_IO_DEBUG) Warningf("Connection not established yet (destination: %s).", addr);
+                version(GEAR_IO_DEBUG) log.warning("Connection not established yet (destination: %s).", addr);
                 // so to check again
                 goto CHECK;
             } else {
                 result = true;
                 version(GEAR_IO_DEBUG) {
                     //
-                    Infof("Connection has been established in %d msecs, destination: %s", sw.peek.total!"msecs", addr);
+                    log.info("Connection has been established in %d msecs, destination: %s", sw.peek.total!"msecs", addr);
                 }
                 // https://docs.microsoft.com/en-us/windows/win32/winsock/sol-socket-socket-options
                 enum SO_UPDATE_CONNECT_CONTEXT = 0x7010;
@@ -205,18 +205,18 @@ abstract class AbstractStream : AbstractSocketChannel {
         memset(&_iocpwrite.overlapped , 0 ,_iocpwrite.overlapped.sizeof );
         _iocpwrite.channel = this;
         _iocpwrite.operation = IocpOperation.write;
-        // Tracef("To write %d bytes, fd=%d", data.length, this.socket.handle());
+        // log.trace("To write %d bytes, fd=%d", data.length, this.socket.handle());
         version (GEAR_IO_DEBUG) {
             size_t bufferLength = data.length;
-            Tracef("To write %d bytes", bufferLength);
+            log.trace("To write %d bytes", bufferLength);
             if (bufferLength > 32)
-                Tracef("%(%02X %) ...", data[0 .. 32]);
+                log.trace("%(%02X %) ...", data[0 .. 32]);
             else
-                Tracef("%s", data);
+                log.trace("%s", data);
         }
         // size_t bufferLength = data.length;
-        //     Tracef("To write %d bytes", bufferLength);
-        //     Tracef("%s", data);
+        //     log.trace("To write %d bytes", bufferLength);
+        //     log.trace("%s", data);
         WSABUF _dataWriteBuffer;
 
         //char[] bf = new char[data.length];
@@ -238,11 +238,11 @@ abstract class AbstractStream : AbstractSocketChannel {
         // FIXME: Needing refactor or cleanup -@Administrator at 2019/8/9 12:18:20 pm
         // Keep this to prevent the buffer corrupted. Why?
         version (GEAR_IO_DEBUG) {
-            Tracef("sent: %d / %d bytes, fd=%d", dwSent, bufferLength, this.handle);
+            log.trace("sent: %d / %d bytes, fd=%d", dwSent, bufferLength, this.handle);
         }
 
         if (this.IsError) {
-            Errorf("Socket Error on write: fd=%d, message=%s", this.handle, this.ErrorMessage);
+            log.error("Socket Error on write: fd=%d, message=%s", this.handle, this.ErrorMessage);
             this.Close();
         }
 
@@ -253,7 +253,7 @@ abstract class AbstractStream : AbstractSocketChannel {
         //_isSingleWriteBusy = false;
         this.ClearError();
         version (GEAR_IO_DEBUG)
-            Tracef("start reading: %d nbytes", this.readLen);
+            log.trace("start reading: %d nbytes", this.readLen);
 
         if (readLen > 0) {
             // import std.stdio;
@@ -266,14 +266,14 @@ abstract class AbstractStream : AbstractSocketChannel {
         } else if (readLen == 0) {
             version (GEAR_IO_DEBUG) {
                 if (_remoteAddress !is null)
-                    Warningf("connection broken: %s", _remoteAddress.toString());
+                    log.warning("connection broken: %s", _remoteAddress.toString());
             }
             OnDisconnected();
             // if (_isClosed)
             //     this.Close();
         } else {
             version (GEAR_IO_DEBUG) {
-                Warningf("undefined behavior on thread %d", GetTid());
+                log.warning("undefined behavior on thread %d", GetTid());
             } else {
                 this._error = true;
                 this._errorMessage = "undefined behavior on thread";
@@ -283,7 +283,7 @@ abstract class AbstractStream : AbstractSocketChannel {
 
     private void HandleReceivedData(ptrdiff_t len) {
         version (GEAR_IO_DEBUG)
-            Tracef("reading done: %d nbytes", readLen);
+            log.trace("reading done: %d nbytes", readLen);
 
         if (dataReceivedHandler is null) 
             return;
@@ -313,7 +313,7 @@ abstract class AbstractStream : AbstractSocketChannel {
 
             } else {
                 version(GEAR_METRIC) {
-                    Warningf("Request peeding... Task status: %s", task.status);
+                    log.warning("Request peeding... Task status: %s", task.status);
                 }
             }
 
@@ -331,7 +331,7 @@ abstract class AbstractStream : AbstractSocketChannel {
     // try to write a block of data directly
     protected size_t TryWrite(const ubyte[] data) {        
         version (GEAR_IO_DEBUG)
-            Tracef("start to write, total=%d bytes, fd=%d", data.length, this.handle);
+            log.trace("start to write, total=%d bytes, fd=%d", data.length, this.handle);
         ClearError();
         size_t nBytes;
         //scope(exit) {
@@ -358,7 +358,7 @@ abstract class AbstractStream : AbstractSocketChannel {
         
         // keep thread-safe here
         //if(!cas(&_isSingleWriteBusy, false, true)) {
-        //    version (GEAR_IO_DEBUG) Warningf("busy writing. fd=%d", this.handle);
+        //    version (GEAR_IO_DEBUG) log.warning("busy writing. fd=%d", this.handle);
         //    return;
         //}
 
@@ -384,16 +384,16 @@ abstract class AbstractStream : AbstractSocketChannel {
         size_t nBytes = DoWrite(data);
 
         version (GEAR_IO_DEBUG)
-            Tracef("written data: %d bytes, fd=%d", nBytes, this.handle);
+            log.trace("written data: %d bytes, fd=%d", nBytes, this.handle);
         if(nBytes == data.length) {
             writeBytes.popBackN(writeBytes.length);
         } else if (nBytes > 0) { 
             writeBytes.popFrontN(nBytes);
             version (GEAR_IO_DEBUG)
-                Warningf("remaining data: %d / %d, fd=%d", data.length - nBytes, data.length, this.handle);
+                log.warning("remaining data: %d / %d, fd=%d", data.length - nBytes, data.length, this.handle);
         } else { 
             version (GEAR_IO_DEBUG)
-            Warningf("I/O busy: writing. fd=%d", this.handle);
+            log.warning("I/O busy: writing. fd=%d", this.handle);
         }   
     }
     
@@ -404,7 +404,7 @@ abstract class AbstractStream : AbstractSocketChannel {
             ResetWriteStatus();
 
             version (GEAR_IO_DEBUG)
-                Tracef("All data are written out. fd=%d", this.handle);
+                log.trace("All data are written out. fd=%d", this.handle);
 
             if(dataWriteDoneHandler !is null)
                 dataWriteDoneHandler(this);
@@ -435,11 +435,11 @@ abstract class AbstractStream : AbstractSocketChannel {
     */
     void OnWriteDone(size_t nBytes) {
         version (GEAR_IO_DEBUG) {
-            Tracef("write done once: %d bytes, isWritting: %s, writeBytes: %s, fd=%d",
+            log.trace("write done once: %d bytes, isWritting: %s, writeBytes: %s, fd=%d",
                  nBytes, _isWritting, writeBytes is null, this.handle);
         }
         //if (_isWriteCancelling) {
-        //    version (GEAR_IO_DEBUG) Tracef("write cancelled.");
+        //    version (GEAR_IO_DEBUG) log.trace("write cancelled.");
         //    ResetWriteStatus();
         //    return;
         //}
@@ -451,15 +451,15 @@ abstract class AbstractStream : AbstractSocketChannel {
         //}
 
         version (GEAR_IO_DEBUG) {
-            Tracef("write done once: %d bytes, isWritting: %s, writeBytes: %s, fd=%d",
+            log.trace("write done once: %d bytes, isWritting: %s, writeBytes: %s, fd=%d",
                  nBytes, _isWritting, writeBytes is null, this.handle);
         }
 
         if (!writeBytes.empty()) {
-            version (GEAR_IO_DEBUG) Tracef("try to write the remaining in buffer.");
+            version (GEAR_IO_DEBUG) log.trace("try to write the remaining in buffer.");
             WriteBufferRemaining();
         }  else {
-            version (GEAR_IO_DEBUG) Tracef("try to write next buffer.");
+            version (GEAR_IO_DEBUG) log.trace("try to write next buffer.");
             TryNextBufferWrite();
         }
     }

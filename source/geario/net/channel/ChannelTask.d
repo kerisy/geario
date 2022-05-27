@@ -2,7 +2,7 @@ module geario.net.channel.ChannelTask;
 
 import geario.event.selector.Selector;
 import geario.Functions;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 import geario.net.channel.AbstractSocketChannel;
 import geario.net.channel.Types;
 import geario.net.IoError;
@@ -49,19 +49,19 @@ class ChannelTask : Task {
 
             if(bytes.empty()) {
                 version(GEAR_IO_DEBUG) {
-                    Warning("A null buffer poped");
+                    log.warning("A null buffer poped");
                 }
                 break;
             }
 
             version(GEAR_IO_DEBUG) {
-                Tracef("buffer: %s", cast(string)bytes.data);
+                log.trace("buffer: %s", cast(string)bytes.data);
             }
 
             dataReceivedHandler(bytes);
 
             version(GEAR_IO_DEBUG) {
-                Tracef("bytes: %s", cast(string)bytes.data);
+                log.trace("bytes: %s", cast(string)bytes.data);
             }
             
             _isFinishing = IsTerminated();
@@ -72,7 +72,7 @@ class ChannelTask : Task {
             if(_isFinishing) {
                 version(GEAR_DEBUG) {
                     if(!bytes.empty() || !_buffers.empty()) {
-                        Warningf("The buffered data lost");
+                        log.warning("The buffered data lost");
                     }
                 }
                 break;

@@ -3,7 +3,7 @@ module geario.net.channel.AbstractSocketChannel;
 import geario.event.selector.Selector;
 import geario.net.channel.AbstractChannel;
 import geario.net.channel.Types;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 import core.time;
 import std.functional;
@@ -35,21 +35,21 @@ abstract class AbstractSocketChannel : AbstractChannel {
         }
         _socket = s;
         version (GEAR_DEBUG_MORE)
-            Infof("new socket: fd=%d", this.handle);
+            log.info("new socket: fd=%d", this.handle);
     }
 
-    protected @property Socket socket() {
+    @property Socket socket() {
         return _socket;
     }
 
     override void Close()
     {
         // if (_isClosing) {
-        //     // debug Warningf("already closed [fd=%d]", this.handle);
+        //     // debug log.warning("already closed [fd=%d]", this.handle);
         //     return;
         // }
         // _isClosing = true;
-        version (GEAR_IO_MORE) Tracef("socket channel closing [fd=%d]...", this.handle);
+        version (GEAR_IO_MORE) log.trace("socket channel closing [fd=%d]...", this.handle);
 
         version (HAVE_IOCP)
         {
@@ -60,14 +60,14 @@ abstract class AbstractSocketChannel : AbstractChannel {
             if (IsBusy()) {
                 import std.parallelism;
 
-                version (GEAR_DEBUG) Warning("Close operation delayed");
+                version (GEAR_DEBUG) log.warning("Close operation delayed");
 
                 auto theTask = task(() {
                     super.Close();
                     while (IsBusy())
                     {
                         version (GEAR_DEBUG)
-                            Infof("waitting for idle [fd=%d]...", this.handle);
+                            log.info("waitting for idle [fd=%d]...", this.handle);
                         // Thread.sleep(20.msecs);
                     }
                 });

@@ -13,7 +13,7 @@ module geario.util.Timer;
 
 import geario.event;
 import geario.event.timer;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 import geario.Exceptions;
 
 import core.time;
@@ -56,7 +56,7 @@ protected:
             if (this.IsError) {
                 canRead = false;
                 this.Close();
-                geario.logging.ConsoleLogger.Error("the Timer Read is Error: ", this.ErrorMessage);
+                log.error("the Timer Read is Error: ", this.ErrorMessage);
             }
         }
     }

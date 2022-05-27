@@ -4,7 +4,7 @@ import geario.Exceptions;
 import geario.Functions;
 import geario.net.channel.AbstractChannel;
 import geario.net.channel.Types;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 import geario.util.worker;
 
 import core.atomic;
@@ -76,7 +76,7 @@ abstract class Selector {
         GC.setAttr(cast(void*)context, GC.BlkAttr.NO_MOVE);
         version (GEAR_IO_DEBUG) {
             int infd = cast(int) channel.handle;
-            Tracef("Register channel@%s: fd=%d, selector: %d", context, infd, GetId());
+            log.trace("Register channel@%s: fd=%d, selector: %d", context, infd, GetId());
         }        
         return true;
     }
@@ -88,7 +88,7 @@ abstract class Selector {
         GC.clrAttr(context, GC.BlkAttr.NO_MOVE);
         version(GEAR_IO_DEBUG) {
             size_t fd = cast(size_t) channel.handle;
-            Infof("The channel@%s has been deregistered: fd=%d, selector: %d", context, fd, GetId());
+            log.info("The channel@%s has been deregistered: fd=%d, selector: %d", context, fd, GetId());
         }        
         return true;
     }
@@ -108,7 +108,7 @@ abstract class Selector {
     */
     void RunAsync(long timeout = -1, SimpleEventHandler handler = null) {
         if(_running) {
-            version (GEAR_IO_DEBUG) Warningf("The current selector %d has being running already!", _id);
+            version (GEAR_IO_DEBUG) log.warning("The current selector %d has being running already!", _id);
             return;
         }
         this.timeout = timeout;
@@ -117,8 +117,8 @@ abstract class Selector {
             try {
                 DoRun(handler); 
             } catch (Throwable t) {
-                Warning(t.msg);
-                version(GEAR_DEBUG) Warning(t.toString());
+                log.warning(t.msg);
+                version(GEAR_DEBUG) log.warning(t.toString());
             }
         });
         // th.IsDaemon = true; // unstable
@@ -134,26 +134,26 @@ abstract class Selector {
             }
             OnLoop(timeout);
         } else {
-            version (GEAR_DEBUG) Warningf("The current selector %d has being running already!", _id);
+            version (GEAR_DEBUG) log.warning("The current selector %d has being running already!", _id);
         }  
     }
 
     void Stop() {
         version (GEAR_IO_DEBUG)
-            Tracef("Stopping selector %d. _running=%s, _isStopping=%s", _id, _running, _isStopping); 
+            log.trace("Stopping selector %d. _running=%s, _isStopping=%s", _id, _running, _isStopping); 
         if(cas(&_isStopping, false, true)) {
             try {
                 OnStop();
             } catch(Throwable t) {
-                Warning(t.msg);
-                version(GEAR_DEBUG) Warning(t);
+                log.warning(t.msg);
+                version(GEAR_DEBUG) log.warning(t);
             }
         }
     }
 
     protected void OnStop() {
         version (GEAR_IO_DEBUG) 
-            Tracef("stopping.");
+            log.trace("stopping.");
     }
 
     /**
@@ -167,15 +167,15 @@ abstract class Selector {
             DoSelect(timeout);
         } else {
             do {
-                // version(GEAR_THREAD_DEBUG) Warningf("Threads: %d", Thread.getAll().length);
+                // version(GEAR_THREAD_DEBUG) log.warning("Threads: %d", Thread.getAll().length);
                 DoSelect(timeout);
-                // Infof("Selector rolled once. isRuning: %s", isRuning);
+                // log.info("Selector rolled once. isRuning: %s", isRuning);
             } while (!_isStopping);
         }
 
         _isReady = false;
         _running = false;
-        version(GEAR_IO_DEBUG) Infof("Selector %d exited.", _id);
+        version(GEAR_IO_DEBUG) log.info("Selector %d exited.", _id);
         Dispose();
     }
 

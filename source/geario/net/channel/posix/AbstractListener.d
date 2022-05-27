@@ -7,7 +7,7 @@ version(Posix):
 import geario.event.selector.Selector;
 import geario.net.channel.AbstractSocketChannel;
 import geario.net.channel.Types;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 import std.conv;
 import std.socket;
@@ -43,7 +43,7 @@ abstract class AbstractListener : AbstractSocketChannel {
             return false;
 
         version (GEAR_DEBUG)
-            Tracef("Listener fd=%d, sslClient fd=%d", this.handle, clientFd);
+            log.trace("Listener fd=%d, sslClient fd=%d", this.handle, clientFd);
 
         if (handler !is null)
             handler(new Socket(clientFd, this.LocalAddress.addressFamily));
@@ -52,7 +52,7 @@ abstract class AbstractListener : AbstractSocketChannel {
 
     override void OnWriteDone() {
         version (GEAR_DEBUG)
-            Tracef("a new connection created");
+            log.trace("a new connection created");
     }
 }
 

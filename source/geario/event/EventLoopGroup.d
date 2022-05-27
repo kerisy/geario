@@ -12,7 +12,7 @@
 module geario.event.EventLoopGroup;
 
 import geario.event.EventLoop;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 import geario.system.Memory;
 import geario.util.Lifecycle;
 import geario.util.worker;
@@ -29,7 +29,7 @@ class EventLoopGroup : Lifecycle {
     this(size_t ioThreadSize = (totalCPUs - 1), size_t workerThreadSize = 0) {
         size_t _size = ioThreadSize > 0 ? ioThreadSize : 1;
 
-        version(GEAR_DEBUG) Infof("ioThreadSize: %d, workerThreadSize: %d", ioThreadSize, workerThreadSize);
+        version(GEAR_DEBUG) log.info("ioThreadSize: %d, workerThreadSize: %d", ioThreadSize, workerThreadSize);
 
         _eventLoops = new EventLoop[_size];
 

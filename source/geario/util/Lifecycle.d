@@ -14,7 +14,7 @@ module geario.util.Lifecycle;
 import core.atomic;
 
 
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 /**
  * A common interface defining methods for start/stop lifecycle control.
@@ -64,7 +64,7 @@ abstract class AbstractLifecycle : Lifecycle {
         if (cas(&_isRunning, false, true)) {
             Initialize();
         } else {
-            version(GEAR_DEBUG) Warning("Starting repeatedly!");
+            version(GEAR_DEBUG) log.warning("Starting repeatedly!");
         }
     }
 
@@ -72,7 +72,7 @@ abstract class AbstractLifecycle : Lifecycle {
         if (cas(&_isRunning, true, false)) {
             Destroy();
         } else {
-            version(GEAR_DEBUG) Warning("Stopping repeatedly!");
+            version(GEAR_DEBUG) log.warning("Stopping repeatedly!");
         }
     }
 

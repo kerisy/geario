@@ -3,7 +3,7 @@ module geario.net.channel.AbstractChannel;
 import geario.event.selector.Selector;
 import geario.net.channel.Types;
 import geario.net.IoError;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 import geario.util.worker;
 
 import core.atomic;
@@ -58,7 +58,7 @@ abstract class AbstractChannel : Channel {
     void Close() {
         if (!_isClosed && cas(&_isClosing, false, true) ) {
             version (GEAR_IO_DEBUG_MORE)
-                Tracef("channel[fd=%d] closing...", this.handle);
+                log.trace("channel[fd=%d] closing...", this.handle);
 
             // closing
             DoClose(); // close
@@ -68,11 +68,11 @@ abstract class AbstractChannel : Channel {
             OnClose(); 
             _isClosing = false;
             version (GEAR_IO_DEBUG)
-                Tracef("channel[fd=%d] closed", this.handle);
+                log.trace("channel[fd=%d] closed", this.handle);
 
         } else {
             version (GEAR_IO_DEBUG) {
-                Warningf("The channel[fd=%d] has already been closed (%s) or closing (%s)",
+                log.warning("The channel[fd=%d] has already been closed (%s) or closing (%s)",
                  this.handle, _isClosed, _isClosing);
             }
         }
@@ -84,19 +84,19 @@ abstract class AbstractChannel : Channel {
 
      void OnClose() {
         version (GEAR_IO_DEBUG)
-            Tracef("onClose [fd=%d]...", this.handle);
+            log.trace("onClose [fd=%d]...", this.handle);
         _isRegistered = false;
         _loop.Deregister(this);
         Clear();
 
         version (GEAR_IO_DEBUG_MORE)
-            Tracef("onClose done [fd=%d]...", this.handle);
+            log.trace("onClose done [fd=%d]...", this.handle);
 
         _isClosed = true;
     }
 
     protected void ErrorOccurred(ErrorCode code, string msg) {
-        debug Warningf("isRegistered: %s, isClosed: %s, msg=%s", _isRegistered, _isClosed, msg);
+        debug log.warning("isRegistered: %s, isClosed: %s, msg=%s", _isRegistered, _isClosed, msg);
         if (errorHandler !is null) {
             errorHandler(new IoError(code, msg));
         }
@@ -173,14 +173,14 @@ class EventChannel : AbstractChannel {
     //     if(_isClosing)
     //         return;
     //     _isClosing = true;
-    //     version (GEAR_DEBUG) Tracef("closing [fd=%d]...", this.handle);
+    //     version (GEAR_DEBUG) log.trace("closing [fd=%d]...", this.handle);
 
     //     if(isBusy) {
     //         import std.parallelism;
-    //         version (GEAR_DEBUG) Warning("Close operation delayed");
+    //         version (GEAR_DEBUG) log.warning("Close operation delayed");
     //         auto theTask = task(() {
     //             while(isBusy) {
-    //                 version (GEAR_DEBUG) Infof("waitting for idle [fd=%d]...", this.handle);
+    //                 version (GEAR_DEBUG) log.info("waitting for idle [fd=%d]...", this.handle);
     //                 // Thread.sleep(20.msecs);
     //             }
     //             super.Close();

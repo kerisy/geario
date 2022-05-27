@@ -11,7 +11,7 @@
 
 module geario.util.pool.ObjectFactory;
 
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 abstract class ObjectFactory(T) {
 

@@ -7,7 +7,7 @@ version (HAVE_EPOLL) :
 import geario.event.selector.Selector;
 import geario.net.channel.Types;
 import geario.net.channel.AbstractChannel;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 // import std.conv;
 import std.socket;
@@ -30,17 +30,17 @@ class EpollEventChannel : EventChannel {
     }
 
     override void trigger() {
-        version (GEAR_IO_DEBUG) Tracef("trigger the epoll selector.");
+        version (GEAR_IO_DEBUG) log.trace("trigger the epoll selector.");
         int r = eventfd_write(this.handle, 1);
         //do_sock_write(r);
         if(r != 0) {
-            Warningf("Error: %d", r);
+            log.warning("Error: %d", r);
         }        
     }
 
     override void OnWrite() {
-        version (GEAR_IO_DEBUG) Tracef("eventLoop running: %s, [fd=%d]", eventLoop.IsRuning, this.handle);
-        version (GEAR_IO_DEBUG) Warning("do nothing");
+        version (GEAR_IO_DEBUG) log.trace("eventLoop running: %s, [fd=%d]", eventLoop.IsRuning, this.handle);
+        version (GEAR_IO_DEBUG) log.warning("do nothing");
     }
 
     override void OnRead() {
@@ -49,18 +49,18 @@ class EpollEventChannel : EventChannel {
         int r = eventfd_read(this.handle, &value);
         //do_sock_read(r); 
         version (GEAR_IO_DEBUG) {
-            Tracef("result=%d, value=%d, fd=%d", r, value, this.handle);
+            log.trace("result=%d, value=%d, fd=%d", r, value, this.handle);
             if(r != 0) {
-                Warningf("Error: %d", r);
+                log.warning("Error: %d", r);
             }
         }
     }
 
     override void OnClose() {
-        version (GEAR_IO_DEBUG) Tracef("onClose, [fd=%d]...", this.handle);
+        version (GEAR_IO_DEBUG) log.trace("onClose, [fd=%d]...", this.handle);
         super.OnClose();
         core.sys.posix.unistd.close(this.handle);
-        version (GEAR_IO_DEBUG_MORE) Tracef("onClose done, [fd=%d]", this.handle);
+        version (GEAR_IO_DEBUG_MORE) log.trace("onClose done, [fd=%d]", this.handle);
     }
 
 }

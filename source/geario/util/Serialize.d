@@ -1435,7 +1435,7 @@ string toTextString(const ref JSONValue root, in bool pretty = false, in JSONOpt
 */
 mixin template SerializationMember(T) {
     import std.traits;
-    debug(GEAR_DEBUG_MORE) import geario.logging.ConsoleLogger;
+    debug(GEAR_DEBUG_MORE) import geario.logging;
 
     alias baseClasses = BaseClassesTuple!T;
 
@@ -1443,7 +1443,7 @@ mixin template SerializationMember(T) {
         ubyte[] Serialize() {
             ubyte[] bytes = cast(ubyte[]).serialize!(T, false)(this);
             debug(GEAR_DEBUG_MORE) 
-                Tracef("this level (%s), length: %d, data: %(%02X %)", T.stringof, bytes.length, bytes);
+                log.trace("this level (%s), length: %d, data: %(%02X %)", T.stringof, bytes.length, bytes);
             return bytes;
         }
         
@@ -1455,16 +1455,16 @@ mixin template SerializationMember(T) {
         override ubyte[] Serialize() {
             auto bytes = cast(ubyte[])geario.util.Serialize.serialize!(T, false)(this);
             debug(GEAR_DEBUG_MORE) 
-                Tracef("current level (%s), length: %d, data: %(%02X %)", T.stringof, bytes.length, bytes);
+                log.trace("current level (%s), length: %d, data: %(%02X %)", T.stringof, bytes.length, bytes);
             
             ubyte[] data = super.Serialize();
             data[1] = cast(ubyte)(data[1] + bytes.length - 2);
             data ~= bytes[2..$];
             debug(GEAR_DEBUG_MORE) 
-                Tracef("all levels (%s), length: %d, data: %(%02X %)", T.stringof, data.length, data);
+                log.trace("all levels (%s), length: %d, data: %(%02X %)", T.stringof, data.length, data);
 
             // auto bytes = cast(ubyte[])geario.util.Serialize.Serialize(this);
-            // Tracef("length: %d, data: %(%02X %)", bytes.length, bytes);
+            // log.trace("length: %d, data: %(%02X %)", bytes.length, bytes);
             return data;
         }    
 

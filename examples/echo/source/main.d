@@ -28,7 +28,7 @@ void main()
     listener.Bind(8888)
         .Accepted((TcpListener sender, TcpStream conn)
         {
-            Infof("new connection from: %s", conn.RemoteAddress.toString());
+            log.info("new connection from: %s", conn.RemoteAddress.toString());
 
             // new TextLineCodec for string
             auto codec = new TextLineCodec;
@@ -39,7 +39,7 @@ void main()
             // Set OnFrame callback function for string message
             framed.OnFrame((string message) {
 
-                Tracef("Message: %s", message);
+                log.trace("Message: %s", message);
 
                 framed.Send(message);
             });

@@ -12,7 +12,7 @@
 module geario.serialization.JsonSerializer;
 
 import geario.serialization.Common;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 
 import std.algorithm : map;
@@ -108,7 +108,7 @@ final class JsonSerializer {
             }
             return result;
         } else {
-            Warningf("The %s does NOT define the default constructor. So a null will be returned.", typeid(T));
+            log.warning("The %s does NOT define the default constructor. So a null will be returned.", typeid(T));
             return defaultValue;          
         }
     }
@@ -171,7 +171,7 @@ final class JsonSerializer {
 
             static if(baseClasses.length >= 1 && !is(BaseType == Object)) {
                 debug(GEAR_DEBUG_MORE) {
-                    Infof("TODO: deserializing fields in base %s for %s", BaseType.stringof, T.stringof);
+                    log.info("TODO: deserializing fields in base %s for %s", BaseType.stringof, T.stringof);
                 }
                 auto jsonItemPtr = "super" in json;
                 if(jsonItemPtr !is null) {
@@ -187,13 +187,13 @@ final class JsonSerializer {
         alias currentMember = __traits(getMember, T, member);
         alias memberType = typeof(currentMember);
         debug(GEAR_DEBUG_MORE) {
-            Infof("deserializing member: %s %s", memberType.stringof, member);
+            log.info("deserializing member: %s %s", memberType.stringof, member);
         }
 
         static if(hasUDA!(currentMember, Ignore) || hasUDA!(currentMember, JsonIgnore)) {
             enum canDeserialize = false;
             version(GEAR_DEBUG) {
-                Infof("Ignore a member: %s %s", memberType.stringof, member);
+                log.info("Ignore a member: %s %s", memberType.stringof, member);
             } 
         } else static if(options.OnlyPublic) {
             static if (__traits(getProtection, currentMember) == "public") {
@@ -203,7 +203,7 @@ final class JsonSerializer {
             }
         } else static if(is(memberType == interface) && !is(memberType : JsonSerializable)) {
             enum canDeserialize = false;
-            version(GEAR_DEBUG) Warning("skipped a interface member (not JsonSerializable): " ~ member);
+            version(GEAR_DEBUG) log.warning("skipped a interface member (not JsonSerializable): " ~ member);
         } else {
             enum canDeserialize = true;
         }
@@ -221,12 +221,12 @@ final class JsonSerializer {
             if(jsonItemPtr is null) {
                 version(GEAR_DEBUG) {
                     if(jsonKeyName != member)
-                        Warningf("No data available for member: %s as %s", member, jsonKeyName);
+                        log.warning("No data available for member: %s as %s", member, jsonKeyName);
                     else
-                        Warningf("No data available for member: %s", member);
+                        log.warning("No data available for member: %s", member);
                 }
             } else {
-                debug(GEAR_DEBUG_MORE) Tracef("available data: %s = %s", member, jsonItemPtr.toString());
+                debug(GEAR_DEBUG_MORE) log.trace("available data: %s = %s", member, jsonItemPtr.toString());
                 static if(is(memberType == class)) {
                     __traits(getMember, target, member) = toObject!(memberType, options)(*jsonItemPtr);
                 } else {
@@ -244,13 +244,13 @@ final class JsonSerializer {
 
         auto jsonItemPtr = MetaTypeName in json;
         if(jsonItemPtr is null) {
-            Warningf("Can't find 'type' item for interface %s", T.stringof);
+            log.warning("Can't find 'type' item for interface %s", T.stringof);
             return T.init;
         }
         string typeId = jsonItemPtr.str;
         T t = cast(T) Object.factory(typeId);
         if(t is null) {
-            Warningf("Can't create instance for %s", T.stringof);
+            log.warning("Can't create instance for %s", T.stringof);
         }
         t.jsonDeserialize(json);
         return t;
@@ -323,7 +323,7 @@ final class JsonSerializer {
             throw new JSONException(json.toString() ~ " is not a " ~ T.stringof ~ " type");
         } else {
         version (GEAR_DEBUG)
-            Warningf(" %s is not a %s type. Using the defaults instead! \n Exception: %s",
+            log.warning(" %s is not a %s type. Using the defaults instead! \n Exception: %s",
                 json.toString(), T.stringof, message);
             return defaultValue;
         }
@@ -405,8 +405,8 @@ final class JsonSerializer {
                     U obj = toObject!(U, options.CanThrow(true))(json);
                     return [obj];
                 } catch(Exception ex) {
-                    Warning(ex.msg);
-                    version(GEAR_DEBUG) Warning(ex);
+                    log.warning(ex.msg);
+                    version(GEAR_DEBUG) log.warning(ex);
                     if(options.CanThrow)
                         throw ex;
                     else {
@@ -429,7 +429,7 @@ final class JsonSerializer {
 
         case JSONType.object:
             foreach (key, value; json.object) {
-                Warning(typeid(value));
+                log.warning(typeid(value));
                 result[key.to!K] = toObject!(U, options)(value);
             }
 
@@ -479,7 +479,7 @@ final class JsonSerializer {
         
         debug(GEAR_DEBUG_MORE) {
             Info("======== current type: class " ~ T.stringof);
-            Tracef("%s, T: %s",
+            log.trace("%s, T: %s",
                 options, T.stringof);
         }
         static if(is(T : JsonSerializable)) {
@@ -525,20 +525,20 @@ final class JsonSerializer {
 
         debug(GEAR_DEBUG_MORE) {
             Info("======== current type: class " ~ T.stringof);
-            Tracef("%s, T: %s", options, T.stringof);
-            // Tracef("TraverseBase = %s, OnlyPublic = %s, IncludeMeta = %s, T: %s",
+            log.trace("%s, T: %s", options, T.stringof);
+            // log.trace("TraverseBase = %s, OnlyPublic = %s, IncludeMeta = %s, T: %s",
             //     TraverseBase, OnlyPublic, IncludeMeta, T.stringof);
         }
 
         if (value is null) {
-            version(GEAR_DEBUG) Warning("value is null");
+            version(GEAR_DEBUG) log.warning("value is null");
             return JSONValue(null);
         }
 
         size_t objHash = value.toHash() + hashOf(T.stringof);
         auto itemPtr = objHash in serializationStates;
         if(itemPtr !is null && *itemPtr) {
-            debug(GEAR_DEBUG_MORE) Tracef("%s serialized.", T.stringof);
+            debug(GEAR_DEBUG_MORE) log.trace("%s serialized.", T.stringof);
             return JSONValue(null);
         }
         
@@ -557,7 +557,7 @@ final class JsonSerializer {
 
                 alias BaseType = baseClasses[0];
                 debug(GEAR_DEBUG_MORE) {
-                    Tracef("BaseType: %s", BaseType.stringof);
+                    log.trace("BaseType: %s", BaseType.stringof);
                 }
                 static if(!is(BaseType == Object)) {
                     JSONValue superResult = serializeObject!(options, BaseType)(value, serializationStates);
@@ -630,15 +630,15 @@ final class JsonSerializer {
         }
         
         debug(GEAR_DEBUG_MORE) {
-            Tracef("name: %s, %s", member, options);
+            log.trace("name: %s, %s", member, options);
         }
 
         static if(canSerialize) {
             alias memberType = typeof(currentMember);
-            debug(GEAR_DEBUG_MORE) Infof("memberType: %s in %s", memberType.stringof, T.stringof);
+            debug(GEAR_DEBUG_MORE) log.info("memberType: %s in %s", memberType.stringof, T.stringof);
 
             static if(is(memberType == interface) && !is(memberType : JsonSerializable)) {
-                version(GEAR_DEBUG) Warning("skipped a interface member(not JsonSerializable): " ~ member);
+                version(GEAR_DEBUG) log.warning("skipped a interface member(not JsonSerializable): " ~ member);
             } else {
                 auto m = __traits(getMember, obj, member);
 
@@ -653,7 +653,7 @@ final class JsonSerializer {
                 auto json = serializeMember!(options)(m, serializationStates);
 
                 debug(GEAR_DEBUG_MORE) {
-                    Tracef("name: %s, value: %s", member, json.toString());
+                    log.trace("name: %s, value: %s", member, json.toString());
                 }
 
                 bool canSetValue = true;
@@ -668,14 +668,14 @@ final class JsonSerializer {
                     if(!result.isNull) {
                         auto jsonItemPtr = jsonKeyName in result;
                         if(jsonItemPtr !is null) {
-                            version(GEAR_DEBUG) Warning("overrided field: " ~ member);
+                            version(GEAR_DEBUG) log.warning("overrided field: " ~ member);
                         }
                     }
                     result[jsonKeyName] = json;
                 }
             }
         } else {
-            debug(GEAR_DEBUG_MORE) Tracef("skipped member, name: %s", member);
+            debug(GEAR_DEBUG_MORE) log.trace("skipped member, name: %s", member);
         }
     }
 
@@ -751,10 +751,10 @@ final class JsonSerializer {
 
         debug(GEAR_DEBUG_MORE) {
             if(value is null) {
-                Infof("======== current type: interface = %s, Object = null", 
+                log.info("======== current type: interface = %s, Object = null", 
                     T.stringof);
             } else {
-                Infof("======== current type: interface = %s, Object = %s", 
+                log.info("======== current type: interface = %s, Object = %s", 
                     T.stringof, typeid(cast(Object)value).name);
             }
         }
@@ -782,7 +782,7 @@ final class JsonSerializer {
         static if(is(T == double) || is(T == float)) {
             import std.math : isNaN;
             if(isNaN(value)) {
-                Warning("Uninitialized float/double value. It will be set to zero.");
+                log.warning("Uninitialized float/double value. It will be set to zero.");
                 value = 0;
             }
         }

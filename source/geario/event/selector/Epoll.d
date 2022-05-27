@@ -36,7 +36,7 @@ import core.sys.linux.epoll;
 import geario.event.selector.Selector;
 import geario.Exceptions;
 import geario.net.channel;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 import geario.event.timer;
 import geario.system.Error;
 import geario.util.worker;
@@ -87,12 +87,12 @@ class AbstractSelector : Selector {
             return;
 
         version (GEAR_IO_DEBUG)
-            Tracef("disposing selector[fd=%d]...", _epollFD);
+            log.trace("disposing selector[fd=%d]...", _epollFD);
         isDisposed = true;
         _eventChannel.Close();
         int r = core.sys.posix.unistd.close(_epollFD);
         if(r != 0) {
-            version (GEAR_IO_DEBUG) Warningf("Error: %d", r);
+            version (GEAR_IO_DEBUG) log.warning("Error: %d", r);
         }
 
         super.Dispose();
@@ -100,7 +100,7 @@ class AbstractSelector : Selector {
 
     override void OnStop() {
         version (GEAR_IO_DEBUG)
-            Infof("Selector stopping. fd=%d, id: %d", _epollFD, GetId());
+            log.info("Selector stopping. fd=%d, id: %d", _epollFD, GetId());
 
         if(!_eventChannel.IsClosed()) {
             _eventChannel.trigger();
@@ -112,7 +112,7 @@ class AbstractSelector : Selector {
         super.Register(channel);
         
         version (GEAR_IO_DEBUG)
-            Tracef("register, channel(fd=%d, type=%s)", channel.handle, channel.Type);
+            log.trace("register, channel(fd=%d, type=%s)", channel.handle, channel.Type);
 
         // epoll_event e;
 
@@ -121,7 +121,7 @@ class AbstractSelector : Selector {
         // e.events = EPOLLIN | EPOLLET | EPOLLERR | EPOLLHUP | EPOLLRDHUP | EPOLLOUT;
         // int s = epoll_ctl(_epollFD, EPOLL_CTL_ADD, infd, &e);
         // if (s == -1) {
-        //     debug Warningf("failed to register channel: fd=%d", infd);
+        //     debug log.warning("failed to register channel: fd=%d", infd);
         //     return false;
         // } else {
         //     return true;
@@ -129,7 +129,7 @@ class AbstractSelector : Selector {
         if (EpollCtl(channel, EPOLL_CTL_ADD)) {
             return true;
         } else {
-            debug Warningf("failed to register channel: fd=%d", channel.handle);
+            debug log.warning("failed to register channel: fd=%d", channel.handle);
             return false;
         }
     }
@@ -138,13 +138,13 @@ class AbstractSelector : Selector {
         scope(exit) {
             super.Deregister(channel);
             version (GEAR_IO_DEBUG)
-                Tracef("deregister, channel(fd=%d, type=%s)", channel.handle, channel.Type);
+                log.trace("deregister, channel(fd=%d, type=%s)", channel.handle, channel.Type);
         }
 
         if (EpollCtl(channel, EPOLL_CTL_DEL)) {
             return true;
         } else {
-            Warningf("deregister channel failed: fd=%d", fd);
+            log.warning("deregister channel failed: fd=%d", fd);
             return false;
         }
     }
@@ -168,7 +168,7 @@ class AbstractSelector : Selector {
         foreach (i; 0 .. len) {
             AbstractChannel channel = cast(AbstractChannel)(events[i].data.ptr);
             if (channel is null) {
-                debug Warningf("channel is null");
+                debug log.warning("channel is null");
             } else {
                 ChannelEventHandle(channel, events[i].events);
             }
@@ -179,10 +179,10 @@ class AbstractSelector : Selector {
 
     private void ChannelEventHandle(AbstractChannel channel, uint event) {
         version (GEAR_IO_DEBUG) {
-            Warningf("thread: %s", Thread.getThis().name());
+            log.warning("thread: %s", Thread.getThis().name());
 
             // Thread.sleep(300.msecs);
-            Infof("handling event: selector=%d, channel=%d, events=%d, isReadable: %s, isWritable: %s, isClosed: %s", 
+            log.info("handling event: selector=%d, channel=%d, events=%d, isReadable: %s, isWritable: %s, isClosed: %s", 
                 this._epollFD, channel.handle, event, IsReadable(event), IsWritable(event), IsClosed(event));
         }
 
@@ -191,14 +191,14 @@ class AbstractSelector : Selector {
                 /* An Error has occured on this fd, or the socket is not
                     ready for reading (why were we notified then?) */
                 version (GEAR_IO_DEBUG) {
-                    Warningf("event=%d, isReadable: %s, isWritable: %s", 
+                    log.warning("event=%d, isReadable: %s, isWritable: %s", 
                         event, IsReadable(event), IsWritable(event));
 
                     if (IsError(event)) {
-                        Warningf("channel Error: fd=%s, event=%d, errno=%d, message=%s",
+                        log.warning("channel Error: fd=%s, event=%d, errno=%d, message=%s",
                                 channel.handle, event, errno, GetErrorMessage(errno));
                     } else {
-                        Infof("channel closed: fd=%d, errno=%d, message=%s",
+                        log.info("channel closed: fd=%d, errno=%d, message=%s",
                                     channel.handle, errno, GetErrorMessage(errno));
                     }
                 }
@@ -215,26 +215,26 @@ class AbstractSelector : Selector {
                 channel.Close();
             } else if (event == EPOLLIN) {
                 version (GEAR_IO_DEBUG)
-                    Tracef("channel read event: fd=%d", channel.handle);
+                    log.trace("channel read event: fd=%d", channel.handle);
                 channel.OnRead();
             } else if (event == EPOLLOUT) {
                 version (GEAR_IO_DEBUG)
-                    Tracef("channel write event: fd=%d", channel.handle);
+                    log.trace("channel write event: fd=%d", channel.handle);
                 channel.OnWrite();
             } else if (event == (EPOLLIN | EPOLLOUT)) {
                 version (GEAR_IO_DEBUG)
-                    Tracef("channel read and write: fd=%d", channel.handle);
+                    log.trace("channel read and write: fd=%d", channel.handle);
                 channel.OnWrite();
                 channel.OnRead();
             } else {
-                debug Warningf("Only read/write/close events can be handled, current event: %d", event);
+                debug log.warning("Only read/write/close events can be handled, current event: %d", event);
             }
         } catch (Exception e) {
             debug {
-                Errorf("Error while handing channel: fd=%s, exception=%s, message=%s",
+                log.error("Error while handing channel: fd=%s, exception=%s, message=%s",
                         channel.handle, typeid(e), e.msg);
             }
-            version(GEAR_DEBUG) Warning(e);
+            version(GEAR_DEBUG) log.warning(e);
         }
     }
 
@@ -324,7 +324,7 @@ class AbstractSelector : Selector {
          * be EPOLL_CTL_DEL.
          */
         if (res < 0 && errno != EBADF && errno != ENOENT && errno != EPERM) {
-            Warning("epoll_ctl failed");
+            log.warning("epoll_ctl failed");
             return false;
         } else
             return true;

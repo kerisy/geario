@@ -24,7 +24,7 @@ import geario.event.EventLoopThreadPool;
 import geario.util.ThreadPool;
 import geario.Exceptions;
 import geario.Functions;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 import geario.util.CompilerHelper;
 
 import std.socket;
@@ -215,7 +215,7 @@ class TcpListener : AbstractListener
                 canRead = OnAccept((Socket socket) {
 
                     version (GEAR_DEBUG) {
-                        Infof("new connection from %s, fd=%d",
+                        log.info("new connection from %s, fd=%d",
                         socket.remoteAddress.toString(), socket.handle());
                     }
 
@@ -237,7 +237,7 @@ class TcpListener : AbstractListener
 
                 if (this.IsError) {
                     canRead = false;
-                    geario.logging.ConsoleLogger.Error("listener Error: ", this.ErrorMessage);
+                    log.error("listener Error: ", this.ErrorMessage);
                     this.Close();
                 }
             }

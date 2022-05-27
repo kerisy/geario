@@ -15,7 +15,7 @@ import geario.concurrency.Future;
 import geario.concurrency.Promise;
 
 import geario.Exceptions;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 import core.atomic;
 import core.thread;
@@ -87,7 +87,7 @@ static if(is(T == void)) {
         if (cas(&_isCompleting, false, true)) {
             OnCompleted();
         } else {
-            Warningf("This promise has been done, and can't be set again. cause: %s", 
+            log.warning("This promise has been done, and can't be set again. cause: %s", 
                 typeid(_cause));
         }
     }
@@ -130,7 +130,7 @@ static if(is(T == void)) {
             _result = result;
             OnCompleted();
         } else {
-            Warning("This promise has been done, and can't be set again.");
+            log.warning("This promise has been done, and can't be set again.");
         }
     }
     private T _result;
@@ -146,7 +146,7 @@ static if(is(T == void)) {
             _cause = cause;    
             OnCompleted();        
         } else {
-            Warningf("This promise has been done, and can't be set again. cause: %s", 
+            log.warning("This promise has been done, and can't be set again. cause: %s", 
                 typeid(_cause));
         }
     }
@@ -222,11 +222,11 @@ static if(is(T == void)) {
                 _waiterCondition.wait();
             } else {
                 version (GEAR_DEBUG) {
-                    Infof("Waiting for a promise in %s...", timeout);
+                    log.info("Waiting for a promise in %s...", timeout);
                 }
                 bool r = _waiterCondition.wait(timeout);
                 if(!r) {
-                    debug Warningf("Timeout for a promise in %s...", timeout);
+                    debug log.warning("Timeout for a promise in %s...", timeout);
                     if (cas(&_isCompleting, false, true)) {
                         _isCompleted = true;
                         _cause = new TimeoutException("Timeout in " ~ timeout.toString());
@@ -235,9 +235,9 @@ static if(is(T == void)) {
             }
             
             if(_cause is null) {
-                version (GEAR_DEBUG) Infof("Got a succeeded promise.");
+                version (GEAR_DEBUG) log.info("Got a succeeded promise.");
             } else {
-                version (GEAR_DEBUG) Warningf("Got a failed promise: %s", typeid(_cause));
+                version (GEAR_DEBUG) log.warning("Got a failed promise: %s", typeid(_cause));
             }
         } 
 
@@ -256,8 +256,8 @@ static if(is(T == void)) {
             throw c;
         }
         
-        debug Warning("Get a exception in a promise: ", _cause.msg);
-        version (GEAR_DEBUG) Warning(_cause);
+        debug log.warning("Get a exception in a promise: ", _cause.msg);
+        version (GEAR_DEBUG) log.warning(_cause);
         throw new ExecutionException(_cause);
     }    
 

@@ -3,7 +3,7 @@ module geario.util.worker.Worker;
 import geario.util.worker.Task;
 // import geario.util.worker.TaskQueue;
 import geario.util.worker.WorkerThread;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 import core.atomic;
 import core.sync.condition;
@@ -34,7 +34,7 @@ class Worker {
         _size = size;
 
         version(GEAR_DEBUG) {
-            Infof("Worker size: %d", size);
+            log.info("Worker size: %d", size);
         }
 
         Initialize();
@@ -60,15 +60,15 @@ class Worker {
 
             if(th.State() == WorkerThreadState.Busy) {
                 if(task is null) {
-                    Warning("A dead worker thread detected: %s, %s", th.name, th.State());
+                    log.warning("A dead worker thread detected: %s, %s", th.name, th.State());
                 } else {
-                    Tracef("Thread: %s,  state: %s, LifeTime: %s", th.name, th.State(), task.LifeTime());
+                    log.trace("Thread: %s,  state: %s, LifeTime: %s", th.name, th.State(), task.LifeTime());
                 }
             } else {
                 if(task is null) {
-                    Tracef("Thread: %s,  state: %s", th.name, th.State());
+                    log.trace("Thread: %s,  state: %s", th.name, th.State());
                 } else {
-                    Tracef("Thread: %s,  state: %s", th.name, th.State(), task.ExecutionTime);
+                    log.trace("Thread: %s,  state: %s", th.name, th.State(), task.ExecutionTime);
                 }
             }
         }
@@ -136,7 +136,7 @@ class Worker {
     private WorkerThread findIdleThread() {
         foreach(size_t index, WorkerThread thread; _workerThreads) {
             version(GEAR_IO_DEBUG) {
-                Tracef("Thread: %s, state: %s", thread.name, thread.State);
+                log.trace("Thread: %s, state: %s", thread.name, thread.State);
             }
 
             if(thread.IsIdle())
@@ -153,7 +153,7 @@ class Worker {
                 Task task = _taskQueue.Pop();
                 if(task is null) {
                     version(GEAR_IO_DEBUG) {
-                        Warning("A null task popped!");
+                        log.warning("A null task popped!");
                         Inspect();
                     }
                     continue;
@@ -180,11 +180,11 @@ class Worker {
                 } while(!isAttatched && _isRunning);
 
             } catch(Throwable ex) {
-                Warning(ex);
+                log.warning(ex);
             }
         }
 
-        version(GEAR_IO_DEBUG) Warning("Worker stopped!");
+        version(GEAR_IO_DEBUG) log.warning("Worker stopped!");
 
     }
 

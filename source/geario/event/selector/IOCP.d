@@ -19,7 +19,7 @@ import geario.event.selector.Selector;
 import geario.net.channel.Types;
 import geario.net.channel;
 import geario.event.timer;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 import geario.system.Error;
 import geario.net.channel.iocp.AbstractStream;
 import core.sys.windows.windows;
@@ -38,7 +38,7 @@ class AbstractSelector : Selector {
         super(number, divider, worker, maxChannels);
         _iocpHandle = CreateIoCompletionPort(INVALID_HANDLE_VALUE, null, 0, 0);
         if (_iocpHandle is null)
-            Errorf("CreateIoCompletionPort failed: %d\n", GetLastError());
+            log.error("CreateIoCompletionPort failed: %d\n", GetLastError());
         _timer.init();
         _stopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
     }
@@ -54,7 +54,7 @@ class AbstractSelector : Selector {
         ChannelType ct = channel.Type;
         auto fd = channel.handle;
         version (GEAR_IO_DEBUG)
-            Tracef("register, channel(fd=%d, type=%s)", fd, ct);
+            log.trace("register, channel(fd=%d, type=%s)", fd, ct);
 
         if (ct == ChannelType.Timer) {
             AbstractTimer timerChannel = cast(AbstractTimer) channel;
@@ -73,7 +73,7 @@ class AbstractSelector : Selector {
 
             //cast(AbstractStream)channel)
         } else {
-            Warningf("Can't register a channel: %s", ct);
+            log.warning("Can't register a channel: %s", ct);
         }
 
         auto stream = cast(AbstractStream)channel;
@@ -88,7 +88,7 @@ class AbstractSelector : Selector {
         // FIXME: Needing refactor or cleanup -@Administrator at 8/28/2018, 3:28:18 PM
         // https://stackoverflow.com/questions/6573218/removing-a-handle-from-a-i-o-completion-port-and-other-questions-about-iocp
         version(GEAR_IO_DEBUG) 
-        Tracef("deregister (fd=%d)", channel.handle);
+        log.trace("deregister (fd=%d)", channel.handle);
 
 
 
@@ -142,7 +142,7 @@ class AbstractSelector : Selector {
                     continue;
                 }
             } else if (ev is null || ev.channel is null) {
-               version(GEAR_IO_DEBUG) Warningf("The ev is null or ev.watche is null. isStopping: %s", IsStopping());
+               version(GEAR_IO_DEBUG) log.warning("The ev is null or ev.watche is null. isStopping: %s", IsStopping());
             } else {
                 if (0 == bytes && (ev.operation == IocpOperation.read || ev.operation == IocpOperation.write)) {
                     AbstractChannel channel = ev.channel;
@@ -162,7 +162,7 @@ class AbstractSelector : Selector {
     private void HandleChannelEvent(IocpOperation op, AbstractChannel channel, DWORD bytes) {
 
         version (GEAR_IO_DEBUG)
-            Infof("ev.operation: %s, fd=%d", op, channel.handle);
+            log.info("ev.operation: %s, fd=%d", op, channel.handle);
 
         switch (op) {
             case IocpOperation.accept:
@@ -184,7 +184,7 @@ class AbstractSelector : Selector {
             case IocpOperation.close:
                 break;
             default:
-                Warning("unsupported operation type: ", op);
+                log.warning("unsupported operation type: ", op);
             break;
         }
     }
@@ -205,13 +205,13 @@ class AbstractSelector : Selector {
 
     private void OnSocketRead(AbstractChannel channel, size_t len) {
         debug if (channel is null) {
-            Warning("channel is null");
+            log.warning("channel is null");
             return;
         }
 
         if (channel is null)
         {
-            Warning("channel is null");
+            log.warning("channel is null");
             return;
         }
 
@@ -219,7 +219,7 @@ class AbstractSelector : Selector {
 
         if (len == 0 || channel.IsClosed) {
             version (GEAR_IO_DEBUG)
-               Infof("channel [fd=%d] closed. isClosed: %s, len: %d", channel.handle, channel.isClosed, len);
+               log.info("channel [fd=%d] closed. isClosed: %s, len: %d", channel.handle, channel.isClosed, len);
             //channel.Close();
             return;
         }
@@ -227,7 +227,7 @@ class AbstractSelector : Selector {
         AbstractSocketChannel socketChannel = cast(AbstractSocketChannel) channel;
         // assert(socketChannel !is null, "The type of channel is: " ~ typeid(channel).name);
         if (socketChannel is null) {
-            Warning("The channel socket is null: ");
+            log.warning("The channel socket is null: ");
         } else {
             socketChannel.setRead(len);
             channel.OnRead();
@@ -236,13 +236,13 @@ class AbstractSelector : Selector {
 
     private void OnSocketWrite(AbstractChannel channel, size_t len) {
         debug if (channel is null) {
-            Warning("channel is null");
+            log.warning("channel is null");
             return;
         }
         AbstractStream client = cast(AbstractStream) channel;
         // assert(client !is null, "The type of channel is: " ~ typeid(channel).name);
         if (client is null) {
-            Warning("The channel socket is null: ");
+            log.warning("The channel socket is null: ");
             return;
         }
         client.OnWriteDone(len); // Notify the client about how many bytes actually sent.

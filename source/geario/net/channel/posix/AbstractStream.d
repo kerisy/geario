@@ -10,7 +10,7 @@ import geario.net.channel.AbstractSocketChannel;
 import geario.net.channel.ChannelTask;
 import geario.net.channel.Types;
 import geario.net.IoError;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 import geario.system.Error;
 import geario.util.worker;
 
@@ -81,7 +81,7 @@ abstract class AbstractStream : AbstractSocketChannel {
 
             } else {
                 version(GEAR_METRIC) {
-                    Warningf("Request peeding... Task status: %s", task.Status);
+                    log.warning("Request peeding... Task status: %s", task.Status);
                 }
             }
 
@@ -117,16 +117,16 @@ abstract class AbstractStream : AbstractSocketChannel {
 
         // ubyte[] rb = new ubyte[BufferSize];
         // ptrdiff_t len = read(this.handle, cast(void*) rb.ptr, rb.length);
-        version (GEAR_IO_DEBUG) Tracef("reading[fd=%d]: %d bytes", this.handle, len);
+        version (GEAR_IO_DEBUG) log.trace("reading[fd=%d]: %d bytes", this.handle, len);
 
         if (len > 0)
         {
             version(GEAR_IO_DEBUG)
             {
                 if (len <= 32)
-                    Infof("fd: %d, %d bytes: %(%02X %)", this.handle, len, buffer[0 .. len]);
+                    log.info("fd: %d, %d bytes: %(%02X %)", this.handle, len, buffer[0 .. len]);
                 else
-                    Infof("fd: %d, 32/%d bytes: %(%02X %)", this.handle, len, buffer[0 .. 32]);
+                    log.info("fd: %d, 32/%d bytes: %(%02X %)", this.handle, len, buffer[0 .. 32]);
             }
 
             // buffer.ReaderIndex(0);
@@ -135,7 +135,7 @@ abstract class AbstractStream : AbstractSocketChannel {
 
             // It's prossible that there are more data waitting for read in the read I/O space.
             if (len == _bufferSize) {
-                version (GEAR_IO_DEBUG) Infof("Read buffer is full read %d bytes. Need to read again.", len);
+                version (GEAR_IO_DEBUG) log.info("Read buffer is full read %d bytes. Need to read again.", len);
                 isDone = false;
             }
         }
@@ -163,7 +163,7 @@ abstract class AbstractStream : AbstractSocketChannel {
         }
         else
         {
-            version (GEAR_DEBUG) Infof("connection broken: %s, fd:%d", _remoteAddress.toString(), this.handle);
+            version (GEAR_DEBUG) log.info("connection broken: %s, fd:%d", _remoteAddress.toString(), this.handle);
 
             OnDisconnected();
         }
@@ -173,7 +173,7 @@ abstract class AbstractStream : AbstractSocketChannel {
 
     override protected void DoClose()
     {
-        version (GEAR_IO_DEBUG) Infof("peer socket %s closing: fd=%d", this.RemoteAddress.toString(), this.handle);
+        version (GEAR_IO_DEBUG) log.info("peer socket %s closing: fd=%d", this.RemoteAddress.toString(), this.handle);
 
         if(this.socket is null)
         {
@@ -186,7 +186,7 @@ abstract class AbstractStream : AbstractSocketChannel {
             this.socket.close();
         }
 
-        version (GEAR_IO_DEBUG) Infof("peer socket %s closed: fd=%d", this.RemoteAddress.toString, this.handle);
+        version (GEAR_IO_DEBUG) log.info("peer socket %s closed: fd=%d", this.RemoteAddress.toString, this.handle);
 
         Task task = _task;
         if(task !is null)
@@ -202,12 +202,12 @@ abstract class AbstractStream : AbstractSocketChannel {
     {
         ClearError();
         // const nBytes = this.socket.send(data);
-        version (GEAR_IO_DEBUG) Tracef("try to write: %d bytes, fd=%d", data.length, this.handle);
+        version (GEAR_IO_DEBUG) log.trace("try to write: %d bytes, fd=%d", data.length, this.handle);
 
         const nBytes = write(this.handle, data.ptr, data.length);
 
         version (GEAR_IO_DEBUG)
-            Tracef("actually written: %d / %d bytes, fd=%d", nBytes, data.length, this.handle);
+            log.trace("actually written: %d / %d bytes, fd=%d", nBytes, data.length, this.handle);
 
         if (nBytes > 0) {
             return nBytes;
@@ -221,12 +221,12 @@ abstract class AbstractStream : AbstractSocketChannel {
 
             if(errno == EAGAIN) {
                 version (GEAR_IO_DEBUG) {
-                    Warningf("Warning on write: fd=%d, errno=%d, message=%s", this.handle,
+                    log.warning("Warning on write: fd=%d, errno=%d, message=%s", this.handle,
                         errno, GetErrorMessage(errno));
                 }
             } else if(errno == EINTR || errno == EWOULDBLOCK) {
                 // https://stackoverflow.com/questions/38964745/can-a-socket-become-writeable-after-an-ewouldblock-but-before-an-epoll-wait
-                debug Warningf("Warning on write: fd=%d, errno=%d, message=%s", this.handle,
+                debug log.warning("Warning on write: fd=%d, errno=%d, message=%s", this.handle,
                         errno, GetErrorMessage(errno));
                 // eventLoop.update(this);
             } else {
@@ -246,7 +246,7 @@ abstract class AbstractStream : AbstractSocketChannel {
             }
         } else {
             version (GEAR_DEBUG) {
-                Warningf("nBytes=%d, message: %s", nBytes, lastSocketError());
+                log.warning("nBytes=%d, message: %s", nBytes, lastSocketError());
                 assert(false, "Undefined behavior!");
             } else {
                 this._error = true;
@@ -259,7 +259,7 @@ abstract class AbstractStream : AbstractSocketChannel {
     private bool TryNextWrite(NbuffChunk buffer) {
         const(ubyte)[] data = cast(const(ubyte)[])buffer.data;
         version (GEAR_IO_DEBUG) {
-            Tracef("writting from a buffer [fd=%d], %d bytes, buffer: %s",
+            log.trace("writting from a buffer [fd=%d], %d bytes, buffer: %s",
                 this.handle, data.length, buffer.data.ptr);
         }
 
@@ -271,7 +271,7 @@ abstract class AbstractStream : AbstractSocketChannel {
             ptrdiff_t nBytes = TryWrite(data);
             version (GEAR_IO_DEBUG)
             {
-                Tracef("write out once: fd=%d, %d / %d bytes, remaining: %d buffer: %s",
+                log.trace("write out once: fd=%d, %d / %d bytes, remaining: %d buffer: %s",
                     this.handle, nBytes, data.length, remaining, buffer.AsArray.ptr);
             }
 
@@ -283,10 +283,10 @@ abstract class AbstractStream : AbstractSocketChannel {
 
         version (GEAR_IO_DEBUG) {
             if(remaining == 0) {
-                    Tracef("A buffer is written out. fd=%d", this.handle);
+                    log.trace("A buffer is written out. fd=%d", this.handle);
                 return true;
             } else {
-                Warningf("Writing cancelled or an Error ocurred. fd=%d", this.handle);
+                log.warning("Writing cancelled or an Error ocurred. fd=%d", this.handle);
                 return false;
             }
         } else {
@@ -309,18 +309,18 @@ abstract class AbstractStream : AbstractSocketChannel {
     override void OnWrite() {
         version (GEAR_IO_DEBUG)
         {
-            Tracef("checking status, isWritting: %s, writeBytes: %s",
+            log.trace("checking status, isWritting: %s, writeBytes: %s",
                 _isWritting, _writeBytes.empty() ? "null" : cast(string)_writeBytes.data());
         }
 
         if(!_isWritting) {
             version (GEAR_IO_DEBUG)
-            Infof("No data needs to be written out. fd=%d", this.handle);
+            log.info("No data needs to be written out. fd=%d", this.handle);
             return;
         }
 
         if(IsClosing() && _isWriteCancelling) {
-            version (GEAR_DEBUG) Infof("Write cancelled or closed, fd=%d", this.handle);
+            version (GEAR_DEBUG) log.info("Write cancelled or closed, fd=%d", this.handle);
             ResetWriteStatus();
             return;
         }
@@ -330,7 +330,7 @@ abstract class AbstractStream : AbstractSocketChannel {
         // keep thread-safe here
         if(!cas(&_isBusyWritting, false, true)) {
             // version (GEAR_IO_DEBUG)
-            version(GEAR_DEBUG) Warningf("busy writing. fd=%d", this.handle);
+            version(GEAR_DEBUG) log.warning("busy writing. fd=%d", this.handle);
             return;
         }
 
@@ -344,14 +344,14 @@ abstract class AbstractStream : AbstractSocketChannel {
             } else {
                 version (GEAR_IO_DEBUG)
                 {
-                    Infof("waiting to try again... fd=%d, writeBytes: %s",
+                    log.info("waiting to try again... fd=%d, writeBytes: %s",
                         this.handle, cast(string)_writeBytes.AsArray);
                 }
                 // eventLoop.update(this);
                 return;
             }
             version (GEAR_IO_DEBUG)
-                Tracef("running here, fd=%d", this.handle);
+                log.trace("running here, fd=%d", this.handle);
         }
 
         if(CheckAllWriteDone()) {
@@ -359,7 +359,7 @@ abstract class AbstractStream : AbstractSocketChannel {
         }
 
         version (GEAR_IO_DEBUG) {
-            Tracef("start to write [fd=%d], writeBytes %s empty", this.handle, _writeBytes.empty() ? "is" : "is not");
+            log.trace("start to write [fd=%d], writeBytes %s empty", this.handle, _writeBytes.empty() ? "is" : "is not");
         }
 
         _writeBytes = _senddingBuffer.frontChunk();
@@ -370,12 +370,12 @@ abstract class AbstractStream : AbstractSocketChannel {
                 CheckAllWriteDone();
             } else {
             version (GEAR_IO_DEBUG)
-                Infof("waiting to try again: fd=%d, writeBytes: %s", this.handle, cast(string)_writeBytes.AsArray);
+                log.info("waiting to try again: fd=%d, writeBytes: %s", this.handle, cast(string)_writeBytes.AsArray);
 
                 // eventLoop.update(this);
             }
             version (GEAR_IO_DEBUG) {
-                Warningf("running here, fd=%d", this.handle);
+                log.warning("running here, fd=%d", this.handle);
             }
         }
     }
@@ -384,14 +384,14 @@ abstract class AbstractStream : AbstractSocketChannel {
     protected bool CheckAllWriteDone() {
         version (GEAR_IO_DEBUG) {
             import std.conv;
-            Tracef("checking remaining: fd=%d, writeQueue empty: %s", this.handle,
+            log.trace("checking remaining: fd=%d, writeQueue empty: %s", this.handle,
                _senddingBuffer.empty() ||  _senddingBuffer.empty().to!string());
         }
 
         if(_senddingBuffer.empty()) {
             ResetWriteStatus();
             version (GEAR_IO_DEBUG)
-                Infof("All data are written out: fd=%d", this.handle);
+                log.info("All data are written out: fd=%d", this.handle);
             if(dataWriteDoneHandler !is null)
                 dataWriteDoneHandler(this);
             return true;
@@ -410,7 +410,7 @@ abstract class AbstractStream : AbstractSocketChannel {
         try {
             this.socket.connect(addr);
         } catch (SocketOSException e) {
-            geario.logging.ConsoleLogger.Error(e.msg);
+            log.error(e.msg);
             version(GEAR_DEBUG) error(e);
             return false;
         }

@@ -19,7 +19,7 @@ import geario.event.selector.Selector;
 import geario.event.timer.Kqueue;
 import geario.Exceptions;
 import geario.net.channel;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 import geario.util.CompilerHelper;
 
 import std.exception;
@@ -64,12 +64,12 @@ class AbstractSelector : Selector {
             return;
 
         version (GEAR_IO_DEBUG)
-            Tracef("disposing selector[fd=%d]...", _kqueueFD);
+            log.trace("disposing selector[fd=%d]...", _kqueueFD);
         isDisposed = true;
         _eventChannel.Close();
         int r = core.sys.posix.unistd.close(_kqueueFD);
         if(r != 0) {
-            version(GEAR_DEBUG) Warningf("Error: %d", r);
+            version(GEAR_DEBUG) log.warning("Error: %d", r);
         }
 
         super.Dispose();
@@ -77,7 +77,7 @@ class AbstractSelector : Selector {
 
     override void OnStop() {
         version (GEAR_IO_DEBUG)
-            Infof("Selector stopping. fd=%d", _kqueueFD);  
+            log.info("Selector stopping. fd=%d", _kqueueFD);  
                
         if(!_eventChannel.IsClosed()) {
             _eventChannel.trigger();
@@ -90,7 +90,7 @@ class AbstractSelector : Selector {
         
         const int fd = channel.handle;
         version (GEAR_IO_DEBUG)
-            Tracef("register channel: fd=%d, type=%s", fd, channel.Type);
+            log.trace("register channel: fd=%d, type=%s", fd, channel.Type);
 
         int err = -1;
         if (channel.Type == ChannelType.Timer)
@@ -143,7 +143,7 @@ class AbstractSelector : Selector {
         scope(exit) {
             super.Deregister(channel);
             version (GEAR_IO_DEBUG)
-                Tracef("deregister, channel(fd=%d, type=%s)", channel.handle, channel.Type);
+                log.trace("deregister, channel(fd=%d, type=%s)", channel.handle, channel.Type);
         }
         
         const fd = channel.handle;
@@ -220,16 +220,16 @@ class AbstractSelector : Selector {
             ushort eventFlags = events[i].flags;
 
             version (GEAR_IO_DEBUG)
-            Infof("handling event: events=%d, fd=%d", eventFlags, channel.handle);
+            log.info("handling event: events=%d, fd=%d", eventFlags, channel.handle);
 
             if (eventFlags & EV_ERROR) {
-                Warningf("channel[fd=%d] has a Error.", channel.handle);
+                log.warning("channel[fd=%d] has a Error.", channel.handle);
                 channel.Close();
                 continue;
             }
 
             if (eventFlags & EV_EOF) {
-                version (GEAR_IO_DEBUG) Infof("channel[fd=%d] closed", channel.handle);
+                version (GEAR_IO_DEBUG) log.info("channel[fd=%d] closed", channel.handle);
                 channel.Close();
                 continue;
             }
@@ -243,7 +243,7 @@ class AbstractSelector : Selector {
 
     private void ChannelEventHandle(AbstractChannel channel, uint filter) {
         version (GEAR_IO_DEBUG)
-        Infof("handling event: events=%d, fd=%d", filter, channel.handle);
+        log.info("handling event: events=%d, fd=%d", filter, channel.handle);
 
         if(filter == EVFILT_TIMER)
         {
@@ -259,7 +259,7 @@ class AbstractSelector : Selector {
         }
         else
         {
-            Warningf("Unhandled channel filter: %d", filter);
+            log.warning("Unhandled channel filter: %d", filter);
         }
     }
 }

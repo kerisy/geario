@@ -20,7 +20,7 @@ import nbuff;
 import geario.event.selector.Selector;
 import geario.event;
 import geario.Functions;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 import std.exception;
 import std.format;
@@ -59,7 +59,7 @@ class TcpStream : AbstractStream {
             _tcpOption = option;
         this.socket = new Socket(family, SocketType.STREAM, ProtocolType.TCP);
         super(loop, family, _tcpOption.bufferSize);
-        version(GEAR_IO_DEBUG) Tracef("buffer size: %d bytes", _tcpOption.bufferSize);
+        version(GEAR_IO_DEBUG) log.trace("buffer size: %d bytes", _tcpOption.bufferSize);
     }
 
     // for server
@@ -113,11 +113,11 @@ class TcpStream : AbstractStream {
         }
 
         if(selectedAddress is null) {
-            Warning("No IPV4 avaliable");
+            log.warning("No IPV4 avaliable");
             selectedAddress = addresses[0];
         }
         version(GEAR_IO_DEBUG) {
-            Infof("connecting with: hostname=%s, ip=%s, port=%d ", hostname, selectedAddress.toAddrString(), port);
+            log.info("connecting with: hostname=%s, ip=%s, port=%d ", hostname, selectedAddress.toAddrString(), port);
         }
         Connect(selectedAddress); // always select the first one.
     }
@@ -147,14 +147,14 @@ class TcpStream : AbstractStream {
         this.socket = new Socket(this._family, SocketType.STREAM, ProtocolType.TCP);
 
         version (GEAR_DEBUG)
-            Tracef("reconnecting %d...", retryCount);
+            log.trace("reconnecting %d...", retryCount);
         Connect(_remoteAddress);
     }
 
     protected override bool DoConnect(Address addr)  {
         try {
             version (GEAR_DEBUG)
-                Tracef("Connecting to %s...", addr);
+                log.trace("Connecting to %s...", addr);
             // Address binded = CreateAddress(this.socket.addressFamily);
             // this.socket.Bind(binded);
             version (HAVE_IOCP) {
@@ -184,8 +184,8 @@ class TcpStream : AbstractStream {
             }
         } catch (Throwable ex) {
             // Must try the best to catch all the exceptions, because it will be executed in another thread.
-            debug Warning(ex.msg);
-            version(GEAR_DEBUG) Warning(ex);
+            debug log.warning(ex.msg);
+            version(GEAR_DEBUG) log.warning(ex);
             ErrorOccurred(ErrorCode.CONNECTIONEFUSED,"Connection refused");
             _isConnected = false;
         } 
@@ -195,8 +195,8 @@ class TcpStream : AbstractStream {
                 _connectionHandler(_isConnected);
 
             } catch(Throwable ex) {
-                debug Warning(ex.msg);
-                version(GEAR_DEBUG) Warning(ex);
+                debug log.warning(ex.msg);
+                version(GEAR_DEBUG) log.warning(ex);
             }
         }
         return true;
@@ -206,7 +206,7 @@ class TcpStream : AbstractStream {
     // http://www.importnew.com/27624.html
     protected void SetKeepalive() {
         version(GEAR_DEBUG) {
-            Infof("isKeepalive: %s, keepaliveTime: %d seconds, Interval: %d seconds", 
+            log.info("isKeepalive: %s, keepaliveTime: %d seconds, Interval: %d seconds", 
                 _tcpOption.isKeepalive, _tcpOption.keepaliveTime, _tcpOption.keepaliveInterval);
         }
         version (HAVE_EPOLL) {
@@ -230,19 +230,19 @@ class TcpStream : AbstractStream {
         version (HAVE_EPOLL) {
             int time;
             int ret1 = getOption(SocketOptionLevel.TCP, cast(SocketOption) TCP_KEEPIDLE, time);
-            Tracef("ret=%d, time=%d", ret1, time);
+            log.trace("ret=%d, time=%d", ret1, time);
 
             int interval;
             int ret2 = getOption(SocketOptionLevel.TCP, cast(SocketOption) TCP_KEEPINTVL, interval);
-            Tracef("ret=%d, interval=%d", ret2, interval);
+            log.trace("ret=%d, interval=%d", ret2, interval);
 
             int isKeep;
             int ret3 = getOption(SocketOptionLevel.SOCKET, SocketOption.KEEPALIVE, isKeep);
-            Tracef("ret=%d, keepalive=%s", ret3, isKeep == 1);
+            log.trace("ret=%d, keepalive=%s", ret3, isKeep == 1);
 
             int probe;
             int ret4 = getOption(SocketOptionLevel.TCP, cast(SocketOption) TCP_KEEPCNT, probe);
-            Tracef("ret=%d, interval=%d", ret4, probe);
+            log.trace("ret=%d, interval=%d", ret4, probe);
         }
     }
 
@@ -300,7 +300,7 @@ class TcpStream : AbstractStream {
         }
 
         version (GEAR_IO_DEBUG)
-            Infof("data buffered (%s bytes): fd=%d", cast(string)bytes.data, this.handle);
+            log.info("data buffered (%s bytes): fd=%d", cast(string)bytes.data, this.handle);
         _isWritting = true;
         InitializeWriteQueue();
         _senddingBuffer.append(bytes);
@@ -315,17 +315,17 @@ class TcpStream : AbstractStream {
         NbuffChunk bytes = NbuffChunk(cast(string) data);
 
         version (GEAR_IO_DEBUG_MORE) {
-            Infof("%d bytes(fd=%d): %(%02X %)", data.length, this.handle, data[0 .. $]);
+            log.info("%d bytes(fd=%d): %(%02X %)", data.length, this.handle, data[0 .. $]);
         } else  version (GEAR_IO_DEBUG) {
             if (data.length <= 32)
-                Infof("%d bytes(fd=%d): %(%02X %)", data.length, this.handle, data[0 .. $]);
+                log.info("%d bytes(fd=%d): %(%02X %)", data.length, this.handle, data[0 .. $]);
             else
-                Infof("%d bytes(fd=%d): %(%02X %)", data.length, this.handle, data[0 .. 32]);
+                log.info("%d bytes(fd=%d): %(%02X %)", data.length, this.handle, data[0 .. 32]);
         }
 
         if(data is null) {
             version(GEAR_DEBUG) {
-                Warning("Writting a empty data on connection %s.", this.RemoteAddress.toString());
+                log.warning("Writting a empty data on connection %s.", this.RemoteAddress.toString());
             }
             return;
         }
@@ -348,7 +348,7 @@ class TcpStream : AbstractStream {
                     if(isWriteCancelling()) {
                         _errorMessage = format("The connection %s is cancelled!", this.RemoteAddress.toString());
                         _error = true;
-                        Warningf(_errorMessage);
+                        log.warning(_errorMessage);
                         throw new Exception(_errorMessage);
                         // break;
                     }
@@ -356,29 +356,29 @@ class TcpStream : AbstractStream {
                     if(IsClosing() || IsClosed()) {
                         _errorMessage= format("The connection %s is closing or closed!", this.RemoteAddress.toString());
                         _error = true;
-                        Warningf("%s, %s", IsClosing(), IsClosed());
+                        log.warning("%s, %s", IsClosing(), IsClosed());
                         throw new Exception(_errorMessage);
                         // break;
                     }
 
                     version (GEAR_IO_DEBUG)
-                        Infof("to write directly %d bytes, fd=%d", d.length, this.handle);
+                        log.info("to write directly %d bytes, fd=%d", d.length, this.handle);
                     size_t nBytes = TryWrite(d);
                     // call Writed handler?
                     // dataSendedHandler(nBytes);
 
                     if (nBytes == d.length) {
                         version (GEAR_IO_DEBUG)
-                            Tracef("write all out at once: %d / %d bytes, fd=%d", nBytes, d.length, this.handle);
+                            log.trace("write all out at once: %d / %d bytes, fd=%d", nBytes, d.length, this.handle);
                         CheckAllWriteDone();
                         break;
                     } else if (nBytes > 0) {
                         version (GEAR_IO_DEBUG)
-                            Tracef("write out partly: %d / %d bytes, fd=%d", nBytes, d.length, this.handle);
+                            log.trace("write out partly: %d / %d bytes, fd=%d", nBytes, d.length, this.handle);
                         d = d[nBytes .. $];
                     } else {
                         version (GEAR_IO_DEBUG)
-                            Warningf("buffering data: %d bytes, fd=%d", d.length, this.handle);
+                            log.warning("buffering data: %d bytes, fd=%d", d.length, this.handle);
                         InitializeWriteQueue();
                         _senddingBuffer.append(bytes);
                         break;
@@ -400,7 +400,7 @@ class TcpStream : AbstractStream {
 
     override protected void OnDisconnected() {
         version(GEAR_DEBUG) {
-            Infof("peer disconnected: fd=%d", this.handle);
+            log.info("peer disconnected: fd=%d", this.handle);
         }
         if (disconnectionHandler !is null)
             disconnectionHandler();
@@ -446,17 +446,17 @@ protected:
         if(lastConnectStatus) {
             version (GEAR_IO_DEBUG) {
                 if (!_senddingBuffer.empty()) {
-                    Warningf("Some data has not been sent yet: fd=%d", this.handle);
+                    log.warning("Some data has not been sent yet: fd=%d", this.handle);
                 }
             }
             version(GEAR_DEBUG) {
-                Infof("Closing a connection with: %s, fd=%d", this.RemoteAddress, this.handle);
+                log.info("Closing a connection with: %s, fd=%d", this.RemoteAddress, this.handle);
             }
 
             ResetWriteStatus();
             _isConnected = false;
             version (GEAR_IO_DEBUG) {
-                Infof("Raising a event on a TCP stream [%s] is down: fd=%d", 
+                log.info("Raising a event on a TCP stream [%s] is down: fd=%d", 
                     this.RemoteAddress.toString(), this.handle);
             }
 

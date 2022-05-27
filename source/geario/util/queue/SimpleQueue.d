@@ -1,6 +1,6 @@
 module geario.util.queue.SimpleQueue;
 
-import geario.logging.ConsoleLogger;
+import geario.logging;
 import geario.util.queue.Queue;
 
 import core.atomic;
@@ -61,7 +61,7 @@ class SimpleQueue(T) : Queue!(T) {
             _isWaiting = false;
             if(!v) {
                 version (GEAR_IO_DEBUG) {
-                    Tracef("Timeout in %s.", _timeout);
+                    log.trace("Timeout in %s.", _timeout);
                 }
                 return T.init;
             }

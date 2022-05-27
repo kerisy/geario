@@ -7,7 +7,7 @@ import geario.serialization.Common;
 import geario.serialization.BinarySerializer;
 import geario.serialization.BinaryDeserializer;
 
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 template PtrType(T) {
     static if (is(T == bool) || is(T == char)) {
@@ -147,7 +147,7 @@ void Specify(SerializationOptions options, C, T : E[], E)(auto ref C obj, ref T 
 void Specify(SerializationOptions options, C, T)(auto ref C obj, ref T val)
         if (isAggregateType!T && !isInputRange!T && !isOutputRange!(T, ubyte)) {
     
-    debug(GEAR_DEBUG_MORE) Tracef("Setting: %s, value: %s", T.stringof, val);
+    debug(GEAR_DEBUG_MORE) log.trace("Setting: %s, value: %s", T.stringof, val);
     loopMembers!(options, C, T)(obj, val);
 }
 
@@ -197,7 +197,7 @@ void LoopMembers(SerializationOptions options, C, T)(auto ref C obj, ref T val) 
 
 void LoopMembers(SerializationOptions options, C, T)(auto ref C obj, ref T val) if (is(T == class)) {
 
-    debug(GEAR_DEBUG_MORE) Tracef("Setting: %s, value: %s", T.stringof, val);
+    debug(GEAR_DEBUG_MORE) log.trace("Setting: %s, value: %s", T.stringof, val);
 
     static if (is(C == BinarySerializer)) {
         if (val is null) {
@@ -246,7 +246,7 @@ void LoopMembersImpl(T, SerializationOptions options, C, VT)
             static if(hasUDA!(currentMember, Ignore)) {
                 enum canDeserialize = false;
                 version(GEAR_DEBUG) {
-                    Infof("Ignore a member: %s %s", memberType.stringof, member);
+                    log.info("Ignore a member: %s %s", memberType.stringof, member);
                 } 
             } else static if(options.OnlyPublic) {
                 static if (__traits(getProtection, currentMember) == "public") {
@@ -259,9 +259,9 @@ void LoopMembersImpl(T, SerializationOptions options, C, VT)
             }
 
             static if(canDeserialize) {
-                debug(GEAR_DEBUG_MORE) Tracef("name: %s", member);
+                debug(GEAR_DEBUG_MORE) log.trace("name: %s", member);
                 specify!(options)(obj, __traits(getMember, val, member));
-                debug(GEAR_DEBUG_MORE) Infof("value: %s", __traits(getMember, val, member));
+                debug(GEAR_DEBUG_MORE) log.info("value: %s", __traits(getMember, val, member));
             }
         }}
     }    
@@ -286,9 +286,9 @@ void LoopMembersImpl(T, SerializationOptions options, C, VT)
 //     // } else {
 //     //     Specify(obj, __traits(getMember, val, member));
 //     // }
-//     debug(GEAR_DEBUG_MORE) Tracef("name: %s", member);
+//     debug(GEAR_DEBUG_MORE) log.trace("name: %s", member);
 //     specify!(options)(obj, __traits(getMember, val, member));
-//     debug(GEAR_DEBUG_MORE) Infof("value: %s", __traits(getMember, val, member));
+//     debug(GEAR_DEBUG_MORE) log.info("value: %s", __traits(getMember, val, member));
 // }
 
 void SpecifyBaseClass(SerializationOptions options, C, T)(auto ref C obj, ref T val) if (is(T == class)) {

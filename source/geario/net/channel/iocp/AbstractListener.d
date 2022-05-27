@@ -8,7 +8,7 @@ import geario.event.selector.Selector;
 import geario.net.channel.AbstractSocketChannel;
 import geario.net.channel.Types;
 import geario.net.channel.iocp.Common;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 import geario.Functions;
 
 import core.sys.windows.windows;
@@ -42,7 +42,7 @@ abstract class AbstractListener : AbstractSocketChannel {
         DWORD dwBytesReceived = 0;
 
         version (GEAR_DEBUG) {
-            Tracef("client socket: acceptor=%s  inner socket=%s", this.handle,
+            log.trace("client socket: acceptor=%s  inner socket=%s", this.handle,
                     _clientSocket.handle());
             // Info("AcceptEx@", AcceptEx);
         }
@@ -65,7 +65,7 @@ abstract class AbstractListener : AbstractSocketChannel {
         // setsockopt(slink, SocketOptionLevel.SOCKET, 0x700B, value.ptr,
         //                    cast(uint) value.length);
         version (GEAR_DEBUG)
-            Tracef("slisten=%s, slink=%s", slisten, slink);
+            log.trace("slisten=%s, slink=%s", slisten, slink);
         setsockopt(slink, SocketOptionLevel.SOCKET, 0x700B, cast(void*)&slisten, slisten.sizeof);
         if (handler !is null)
             handler(this._clientSocket);
@@ -80,7 +80,7 @@ abstract class AbstractListener : AbstractSocketChannel {
     override void OnClose() {
         
         // version (GEAR_DEBUG)
-        //     Tracef("_isWritting=%s", _isWritting);
+        //     log.trace("_isWritting=%s", _isWritting);
         // _isWritting = false;
         // assert(false, "");
         // TODO: created by Administrator @ 2018-3-27 15:51:52

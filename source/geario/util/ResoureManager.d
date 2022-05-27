@@ -1,6 +1,6 @@
 module geario.util.ResoureManager;
 
-import geario.logging.ConsoleLogger;
+import geario.logging;
 import geario.util.Closeable;
 
 import geario.util.worker.WorkerThread;
@@ -15,7 +15,7 @@ void RegisterResoure(Closeable res) {
     foreach (Closeable obj; _closeableObjects) {
         if(obj is res) {
             version (GEAR_IO_DEBUG) {
-                Tracef("%s@%s has been registered... %d", typeid(cast(Object)res), cast(void*)res);
+                log.trace("%s@%s has been registered... %d", typeid(cast(Object)res), cast(void*)res);
             }
             return;
         }
@@ -23,9 +23,9 @@ void RegisterResoure(Closeable res) {
     _closeableObjects ~= res;
 }
 
-void CollectResoure() nothrow {
+void CollectResoure() {
     version (GEAR_IO_DEBUG) {
-        Tracef("Collecting (remains: %d)...", _closeableObjects.length);
+        log.trace("Collecting (remains: %d)...", _closeableObjects.length);
     }
 
     Closeable[] objects = _closeableObjects;
@@ -35,7 +35,7 @@ void CollectResoure() nothrow {
         try {
             obj.Close();
         } catch (Throwable t) {
-            Warning(t);
+            log.warning(t);
         }
     }
 

@@ -33,7 +33,7 @@ string generateUnitTests(T)() {
     string[] methodsAfter;
 
     string str;
-    str ~= `import std.stdio; import geario.logging.ConsoleLogger;
+    str ~= `import std.stdio; import geario.logging;
 writeln("=================================");
 writeln("Module: ` ~ fullTypeName ~ `     ");
 writeln("=================================");

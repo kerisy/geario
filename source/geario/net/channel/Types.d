@@ -15,7 +15,7 @@ import geario.net.IoError;
 import geario.util.queue.SimpleQueue;
 import geario.Functions;
 import geario.system.Memory;
-import geario.logging.Logger;
+import geario.logging;
 
 import core.atomic;
 import std.socket;

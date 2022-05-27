@@ -14,7 +14,7 @@ module http.HttpServer;
 import geario.buffer.Bytes;
 
 import geario.event;
-import geario.logging.ConsoleLogger;
+import geario.logging;
 
 import geario.net.TcpListener;
 import geario.net.TcpStream;
@@ -44,14 +44,14 @@ class HttpServer
     {
         _listener.Bind(port);
         _listener.Accepted((TcpListener sender, TcpStream connection) {
-            Infof("new connection from: %s", connection.RemoteAddress.toString());
+            log.info("new connection from: %s", connection.RemoteAddress.toString());
 
             auto codec = new HttpCodec();
             auto framed = codec.CreateFramed(connection);
 
             framed.OnFrame((HttpRequest request)
                 {
-                    Tracef("content: %s", request.content);
+                    log.trace("content: %s", request.content);
                     HttpResponse response = new HttpResponse();
                     string path = request.uri;
                     if(path == "/plaintext")
@@ -64,19 +64,19 @@ class HttpServer
                 });
 
             connection.Disconnected(() {
-                    Infof("client disconnected: %s", connection.RemoteAddress.toString());
+                    log.info("client disconnected: %s", connection.RemoteAddress.toString());
                 }).Closed(() {
-                    Infof("connection closed, local: %s, remote: %s",
+                    log.info("connection closed, local: %s, remote: %s",
                         connection.LocalAddress.toString(), connection.RemoteAddress.toString());
                 }).Error((IoError error) { 
-                    Errorf("Error occurred: %d  %s", error.errorCode, error.errorMsg); 
+                    log.error("Error occurred: %d  %s", error.errorCode, error.errorMsg); 
                 });
         });
     }
 
     void Start()
     {
-        Tracef("Listening on: %s", _listener.BindingAddress.toString());
+        log.trace("Listening on: %s", _listener.BindingAddress.toString());
 
         _listener.Start();
         _loop.Run();
