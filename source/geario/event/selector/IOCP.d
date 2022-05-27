@@ -73,7 +73,7 @@ class AbstractSelector : Selector {
 
             //cast(AbstractStream)channel)
         } else {
-            log.warning("Can't register a channel: %s", ct);
+            log.warn("Can't register a channel: %s", ct);
         }
 
         auto stream = cast(AbstractStream)channel;
@@ -142,7 +142,7 @@ class AbstractSelector : Selector {
                     continue;
                 }
             } else if (ev is null || ev.channel is null) {
-               version(GEAR_IO_DEBUG) log.warning("The ev is null or ev.watche is null. isStopping: %s", IsStopping());
+               version(GEAR_IO_DEBUG) log.warn("The ev is null or ev.watche is null. isStopping: %s", IsStopping());
             } else {
                 if (0 == bytes && (ev.operation == IocpOperation.read || ev.operation == IocpOperation.write)) {
                     AbstractChannel channel = ev.channel;
@@ -184,7 +184,7 @@ class AbstractSelector : Selector {
             case IocpOperation.close:
                 break;
             default:
-                log.warning("unsupported operation type: ", op);
+                log.warn("unsupported operation type: ", op);
             break;
         }
     }
@@ -205,13 +205,13 @@ class AbstractSelector : Selector {
 
     private void OnSocketRead(AbstractChannel channel, size_t len) {
         debug if (channel is null) {
-            log.warning("channel is null");
+            log.warn("channel is null");
             return;
         }
 
         if (channel is null)
         {
-            log.warning("channel is null");
+            log.warn("channel is null");
             return;
         }
 
@@ -227,7 +227,7 @@ class AbstractSelector : Selector {
         AbstractSocketChannel socketChannel = cast(AbstractSocketChannel) channel;
         // assert(socketChannel !is null, "The type of channel is: " ~ typeid(channel).name);
         if (socketChannel is null) {
-            log.warning("The channel socket is null: ");
+            log.warn("The channel socket is null: ");
         } else {
             socketChannel.setRead(len);
             channel.OnRead();
@@ -236,13 +236,13 @@ class AbstractSelector : Selector {
 
     private void OnSocketWrite(AbstractChannel channel, size_t len) {
         debug if (channel is null) {
-            log.warning("channel is null");
+            log.warn("channel is null");
             return;
         }
         AbstractStream client = cast(AbstractStream) channel;
         // assert(client !is null, "The type of channel is: " ~ typeid(channel).name);
         if (client is null) {
-            log.warning("The channel socket is null: ");
+            log.warn("The channel socket is null: ");
             return;
         }
         client.OnWriteDone(len); // Notify the client about how many bytes actually sent.

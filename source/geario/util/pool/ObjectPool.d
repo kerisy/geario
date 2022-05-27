@@ -112,7 +112,7 @@ class ObjectPool(T) {
             if(r is null) {
                 _waiters.stableInsert(promise);
                 version(GEAR_DEBUG) {
-                    log.warning("New waiter...%d", GetNumWaiters());
+                    log.warn("New waiter...%d", GetNumWaiters());
                 }
             } else {
                 promise.Succeeded(r);
@@ -120,7 +120,7 @@ class ObjectPool(T) {
         } else {
             _waiters.stableInsert(promise);
             version(GEAR_DEBUG) {
-                log.warning("New waiter...%d", GetNumWaiters());
+                log.warn("New waiter...%d", GetNumWaiters());
             }
         }
 
@@ -147,7 +147,7 @@ class ObjectPool(T) {
                 if(!isValid) {
                     pooledObj.Invalidate();
                     version(GEAR_DEBUG) {
-                        log.warning("An invalid object (id=%d) detected at slot %d.", pooledObj.Id(), index);
+                        log.warn("An invalid object (id=%d) detected at slot %d.", pooledObj.Id(), index);
                     }
                     _factory.DestroyObject(underlyingObj);
                     underlyingObj = _factory.MakeObject();
@@ -158,7 +158,7 @@ class ObjectPool(T) {
             } else if(pooledObj.IsInvalid()) {
                 T underlyingObj = pooledObj.GetObject();
                 version(GEAR_DEBUG) {
-                    log.warning("An invalid object (id=%d) detected at slot %d.", pooledObj.Id(), index);
+                    log.warn("An invalid object (id=%d) detected at slot %d.", pooledObj.Id(), index);
                 }
                 _factory.DestroyObject(underlyingObj);
                 underlyingObj = _factory.MakeObject();
@@ -172,7 +172,7 @@ class ObjectPool(T) {
         
         if(pooledObj is null) {
             version(GEAR_DEBUG) {
-                log.warning("No idle object avaliable.");
+                log.warn("No idle object avaliable.");
             }
             return null;
         }
@@ -195,7 +195,7 @@ class ObjectPool(T) {
      */
     void ReturnObject(T obj) {
         if(obj is null) {
-            version(GEAR_DEBUG) log.warning("Do nothing for a null object");
+            version(GEAR_DEBUG) log.warn("Do nothing for a null object");
             return;
         }
 
@@ -233,7 +233,7 @@ class ObjectPool(T) {
                     if(result) {
                         log.info("Returned: id=%d", pooledObj.Id());
                     } else {
-                        log.warning("Return failed: id=%d", pooledObj.Id());
+                        log.warn("Return failed: id=%d", pooledObj.Id());
                     }
                 }
                 break;
@@ -265,13 +265,13 @@ class ObjectPool(T) {
         // 
         T r = DoBorrow();
         if(r is null) {
-            log.warning("No idle object avaliable for waiter");
+            log.warn("No idle object avaliable for waiter");
         } else {
             _waiters.removeFront();
             try {
                 waiter.Succeeded(r);
             } catch(Exception ex) {
-                log.warning(ex);
+                log.warn(ex);
             }
         }
     }

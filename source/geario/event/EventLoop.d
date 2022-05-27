@@ -50,7 +50,7 @@ final class EventLoop : AbstractSelector
     override void Stop() {
         if(IsStopping()) {
             version (GEAR_IO_DEBUG) 
-            log.warning("The event loop %d is stopping.", GetId());
+            log.warn("The event loop %d is stopping.", GetId());
             return;
         }
         

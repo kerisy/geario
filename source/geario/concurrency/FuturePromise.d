@@ -87,7 +87,7 @@ static if(is(T == void)) {
         if (cas(&_isCompleting, false, true)) {
             OnCompleted();
         } else {
-            log.warning("This promise has been done, and can't be set again. cause: %s", 
+            log.warn("This promise has been done, and can't be set again. cause: %s", 
                 typeid(_cause));
         }
     }
@@ -130,7 +130,7 @@ static if(is(T == void)) {
             _result = result;
             OnCompleted();
         } else {
-            log.warning("This promise has been done, and can't be set again.");
+            log.warn("This promise has been done, and can't be set again.");
         }
     }
     private T _result;
@@ -146,7 +146,7 @@ static if(is(T == void)) {
             _cause = cause;    
             OnCompleted();        
         } else {
-            log.warning("This promise has been done, and can't be set again. cause: %s", 
+            log.warn("This promise has been done, and can't be set again. cause: %s", 
                 typeid(_cause));
         }
     }
@@ -226,7 +226,7 @@ static if(is(T == void)) {
                 }
                 bool r = _waiterCondition.wait(timeout);
                 if(!r) {
-                    debug log.warning("Timeout for a promise in %s...", timeout);
+                    debug log.warn("Timeout for a promise in %s...", timeout);
                     if (cas(&_isCompleting, false, true)) {
                         _isCompleted = true;
                         _cause = new TimeoutException("Timeout in " ~ timeout.toString());
@@ -237,7 +237,7 @@ static if(is(T == void)) {
             if(_cause is null) {
                 version (GEAR_DEBUG) log.info("Got a succeeded promise.");
             } else {
-                version (GEAR_DEBUG) log.warning("Got a failed promise: %s", typeid(_cause));
+                version (GEAR_DEBUG) log.warn("Got a failed promise: %s", typeid(_cause));
             }
         } 
 
@@ -256,8 +256,8 @@ static if(is(T == void)) {
             throw c;
         }
         
-        debug log.warning("Get a exception in a promise: ", _cause.msg);
-        version (GEAR_DEBUG) log.warning(_cause);
+        debug log.warn("Get a exception in a promise: ", _cause.msg);
+        version (GEAR_DEBUG) log.warn(_cause);
         throw new ExecutionException(_cause);
     }    
 

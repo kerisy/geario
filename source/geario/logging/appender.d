@@ -87,7 +87,7 @@ class ConsoleAppender:Appender
 
         switch (level)
         {
-            case level.Warning:
+            case level.Warn:
                 c = fg.yellow;
                 break;
             case Level.Error:

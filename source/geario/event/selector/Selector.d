@@ -108,7 +108,7 @@ abstract class Selector {
     */
     void RunAsync(long timeout = -1, SimpleEventHandler handler = null) {
         if(_running) {
-            version (GEAR_IO_DEBUG) log.warning("The current selector %d has being running already!", _id);
+            version (GEAR_IO_DEBUG) log.warn("The current selector %d has being running already!", _id);
             return;
         }
         this.timeout = timeout;
@@ -117,8 +117,8 @@ abstract class Selector {
             try {
                 DoRun(handler); 
             } catch (Throwable t) {
-                log.warning(t.msg);
-                version(GEAR_DEBUG) log.warning(t.toString());
+                log.warn(t.msg);
+                version(GEAR_DEBUG) log.warn(t.toString());
             }
         });
         // th.IsDaemon = true; // unstable
@@ -134,7 +134,7 @@ abstract class Selector {
             }
             OnLoop(timeout);
         } else {
-            version (GEAR_DEBUG) log.warning("The current selector %d has being running already!", _id);
+            version (GEAR_DEBUG) log.warn("The current selector %d has being running already!", _id);
         }  
     }
 
@@ -145,8 +145,8 @@ abstract class Selector {
             try {
                 OnStop();
             } catch(Throwable t) {
-                log.warning(t.msg);
-                version(GEAR_DEBUG) log.warning(t);
+                log.warn(t.msg);
+                version(GEAR_DEBUG) log.warn(t);
             }
         }
     }
@@ -167,7 +167,7 @@ abstract class Selector {
             DoSelect(timeout);
         } else {
             do {
-                // version(GEAR_THREAD_DEBUG) log.warning("Threads: %d", Thread.getAll().length);
+                // version(GEAR_THREAD_DEBUG) log.warn("Threads: %d", Thread.getAll().length);
                 DoSelect(timeout);
                 // log.info("Selector rolled once. isRuning: %s", isRuning);
             } while (!_isStopping);

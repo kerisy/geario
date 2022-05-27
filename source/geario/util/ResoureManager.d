@@ -35,7 +35,7 @@ void CollectResoure() {
         try {
             obj.Close();
         } catch (Throwable t) {
-            log.warning(t);
+            log.warn(t);
         }
     }
 

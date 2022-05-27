@@ -108,7 +108,7 @@ final class JsonSerializer {
             }
             return result;
         } else {
-            log.warning("The %s does NOT define the default constructor. So a null will be returned.", typeid(T));
+            log.warn("The %s does NOT define the default constructor. So a null will be returned.", typeid(T));
             return defaultValue;          
         }
     }
@@ -203,7 +203,7 @@ final class JsonSerializer {
             }
         } else static if(is(memberType == interface) && !is(memberType : JsonSerializable)) {
             enum canDeserialize = false;
-            version(GEAR_DEBUG) log.warning("skipped a interface member (not JsonSerializable): " ~ member);
+            version(GEAR_DEBUG) log.warn("skipped a interface member (not JsonSerializable): " ~ member);
         } else {
             enum canDeserialize = true;
         }
@@ -221,9 +221,9 @@ final class JsonSerializer {
             if(jsonItemPtr is null) {
                 version(GEAR_DEBUG) {
                     if(jsonKeyName != member)
-                        log.warning("No data available for member: %s as %s", member, jsonKeyName);
+                        log.warn("No data available for member: %s as %s", member, jsonKeyName);
                     else
-                        log.warning("No data available for member: %s", member);
+                        log.warn("No data available for member: %s", member);
                 }
             } else {
                 debug(GEAR_DEBUG_MORE) log.trace("available data: %s = %s", member, jsonItemPtr.toString());
@@ -244,13 +244,13 @@ final class JsonSerializer {
 
         auto jsonItemPtr = MetaTypeName in json;
         if(jsonItemPtr is null) {
-            log.warning("Can't find 'type' item for interface %s", T.stringof);
+            log.warn("Can't find 'type' item for interface %s", T.stringof);
             return T.init;
         }
         string typeId = jsonItemPtr.str;
         T t = cast(T) Object.factory(typeId);
         if(t is null) {
-            log.warning("Can't create instance for %s", T.stringof);
+            log.warn("Can't create instance for %s", T.stringof);
         }
         t.jsonDeserialize(json);
         return t;
@@ -323,7 +323,7 @@ final class JsonSerializer {
             throw new JSONException(json.toString() ~ " is not a " ~ T.stringof ~ " type");
         } else {
         version (GEAR_DEBUG)
-            log.warning(" %s is not a %s type. Using the defaults instead! \n Exception: %s",
+            log.warn(" %s is not a %s type. Using the defaults instead! \n Exception: %s",
                 json.toString(), T.stringof, message);
             return defaultValue;
         }
@@ -405,8 +405,8 @@ final class JsonSerializer {
                     U obj = toObject!(U, options.CanThrow(true))(json);
                     return [obj];
                 } catch(Exception ex) {
-                    log.warning(ex.msg);
-                    version(GEAR_DEBUG) log.warning(ex);
+                    log.warn(ex.msg);
+                    version(GEAR_DEBUG) log.warn(ex);
                     if(options.CanThrow)
                         throw ex;
                     else {
@@ -429,7 +429,7 @@ final class JsonSerializer {
 
         case JSONType.object:
             foreach (key, value; json.object) {
-                log.warning(typeid(value));
+                log.warn(typeid(value));
                 result[key.to!K] = toObject!(U, options)(value);
             }
 
@@ -531,7 +531,7 @@ final class JsonSerializer {
         }
 
         if (value is null) {
-            version(GEAR_DEBUG) log.warning("value is null");
+            version(GEAR_DEBUG) log.warn("value is null");
             return JSONValue(null);
         }
 
@@ -638,7 +638,7 @@ final class JsonSerializer {
             debug(GEAR_DEBUG_MORE) log.info("memberType: %s in %s", memberType.stringof, T.stringof);
 
             static if(is(memberType == interface) && !is(memberType : JsonSerializable)) {
-                version(GEAR_DEBUG) log.warning("skipped a interface member(not JsonSerializable): " ~ member);
+                version(GEAR_DEBUG) log.warn("skipped a interface member(not JsonSerializable): " ~ member);
             } else {
                 auto m = __traits(getMember, obj, member);
 
@@ -668,7 +668,7 @@ final class JsonSerializer {
                     if(!result.isNull) {
                         auto jsonItemPtr = jsonKeyName in result;
                         if(jsonItemPtr !is null) {
-                            version(GEAR_DEBUG) log.warning("overrided field: " ~ member);
+                            version(GEAR_DEBUG) log.warn("overrided field: " ~ member);
                         }
                     }
                     result[jsonKeyName] = json;
@@ -782,7 +782,7 @@ final class JsonSerializer {
         static if(is(T == double) || is(T == float)) {
             import std.math : isNaN;
             if(isNaN(value)) {
-                log.warning("Uninitialized float/double value. It will be set to zero.");
+                log.warn("Uninitialized float/double value. It will be set to zero.");
                 value = 0;
             }
         }

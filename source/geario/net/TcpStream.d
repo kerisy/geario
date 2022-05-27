@@ -113,7 +113,7 @@ class TcpStream : AbstractStream {
         }
 
         if(selectedAddress is null) {
-            log.warning("No IPV4 avaliable");
+            log.warn("No IPV4 avaliable");
             selectedAddress = addresses[0];
         }
         version(GEAR_IO_DEBUG) {
@@ -184,8 +184,8 @@ class TcpStream : AbstractStream {
             }
         } catch (Throwable ex) {
             // Must try the best to catch all the exceptions, because it will be executed in another thread.
-            debug log.warning(ex.msg);
-            version(GEAR_DEBUG) log.warning(ex);
+            debug log.warn(ex.msg);
+            version(GEAR_DEBUG) log.warn(ex);
             ErrorOccurred(ErrorCode.CONNECTIONEFUSED,"Connection refused");
             _isConnected = false;
         } 
@@ -195,8 +195,8 @@ class TcpStream : AbstractStream {
                 _connectionHandler(_isConnected);
 
             } catch(Throwable ex) {
-                debug log.warning(ex.msg);
-                version(GEAR_DEBUG) log.warning(ex);
+                debug log.warn(ex.msg);
+                version(GEAR_DEBUG) log.warn(ex);
             }
         }
         return true;
@@ -325,7 +325,7 @@ class TcpStream : AbstractStream {
 
         if(data is null) {
             version(GEAR_DEBUG) {
-                log.warning("Writting a empty data on connection %s.", this.RemoteAddress.toString());
+                log.warn("Writting a empty data on connection %s.", this.RemoteAddress.toString());
             }
             return;
         }
@@ -348,7 +348,7 @@ class TcpStream : AbstractStream {
                     if(isWriteCancelling()) {
                         _errorMessage = format("The connection %s is cancelled!", this.RemoteAddress.toString());
                         _error = true;
-                        log.warning(_errorMessage);
+                        log.warn(_errorMessage);
                         throw new Exception(_errorMessage);
                         // break;
                     }
@@ -356,7 +356,7 @@ class TcpStream : AbstractStream {
                     if(IsClosing() || IsClosed()) {
                         _errorMessage= format("The connection %s is closing or closed!", this.RemoteAddress.toString());
                         _error = true;
-                        log.warning("%s, %s", IsClosing(), IsClosed());
+                        log.warn("%s, %s", IsClosing(), IsClosed());
                         throw new Exception(_errorMessage);
                         // break;
                     }
@@ -378,7 +378,7 @@ class TcpStream : AbstractStream {
                         d = d[nBytes .. $];
                     } else {
                         version (GEAR_IO_DEBUG)
-                            log.warning("buffering data: %d bytes, fd=%d", d.length, this.handle);
+                            log.warn("buffering data: %d bytes, fd=%d", d.length, this.handle);
                         InitializeWriteQueue();
                         _senddingBuffer.append(bytes);
                         break;
@@ -446,7 +446,7 @@ protected:
         if(lastConnectStatus) {
             version (GEAR_IO_DEBUG) {
                 if (!_senddingBuffer.empty()) {
-                    log.warning("Some data has not been sent yet: fd=%d", this.handle);
+                    log.warn("Some data has not been sent yet: fd=%d", this.handle);
                 }
             }
             version(GEAR_DEBUG) {

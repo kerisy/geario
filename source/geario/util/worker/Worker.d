@@ -60,7 +60,7 @@ class Worker {
 
             if(th.State() == WorkerThreadState.Busy) {
                 if(task is null) {
-                    log.warning("A dead worker thread detected: %s, %s", th.name, th.State());
+                    log.warn("A dead worker thread detected: %s, %s", th.name, th.State());
                 } else {
                     log.trace("Thread: %s,  state: %s, LifeTime: %s", th.name, th.State(), task.LifeTime());
                 }
@@ -153,7 +153,7 @@ class Worker {
                 Task task = _taskQueue.Pop();
                 if(task is null) {
                     version(GEAR_IO_DEBUG) {
-                        log.warning("A null task popped!");
+                        log.warn("A null task popped!");
                         Inspect();
                     }
                     continue;
@@ -180,11 +180,11 @@ class Worker {
                 } while(!isAttatched && _isRunning);
 
             } catch(Throwable ex) {
-                log.warning(ex);
+                log.warn(ex);
             }
         }
 
-        version(GEAR_IO_DEBUG) log.warning("Worker stopped!");
+        version(GEAR_IO_DEBUG) log.warn("Worker stopped!");
 
     }
 

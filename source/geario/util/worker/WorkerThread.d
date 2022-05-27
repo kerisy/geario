@@ -102,7 +102,7 @@ class WorkerThread : Thread {
             _condition.notify();
             
         } else {
-            log.warning("%s is unavailable. state: %s", this.name(), _state);
+            log.warn("%s is unavailable. state: %s", this.name(), _state);
         }
 
         return r;
@@ -120,14 +120,14 @@ class WorkerThread : Thread {
                 _task = null;
                 bool r = cas(&_state, WorkerThreadState.Busy, WorkerThreadState.Idle);
                 if(!r) {
-                    log.warning("Failed to set thread %s to Idle, its state is %s", this.name, _state);
+                    log.warn("Failed to set thread %s to Idle, its state is %s", this.name, _state);
                 }
             } 
 
             try {
                 DoRun();
             } catch (Throwable ex) {
-                log.warning(ex);
+                log.warn(ex);
             } 
         }
         
@@ -147,9 +147,9 @@ class WorkerThread : Thread {
             version(GEAR_IO_DEBUG) {
                 if(!r && _state == WorkerThreadState.Busy) {
                     if(task is null) {
-                        log.warning("No task attatched on a busy thread %s in %s, task: %s", this.name, _timeout);
+                        log.warn("No task attatched on a busy thread %s in %s, task: %s", this.name, _timeout);
                     } else {
-                        log.warning("more tests need for this status, thread %s in %s", this.name, _timeout);
+                        log.warn("more tests need for this status, thread %s in %s", this.name, _timeout);
                     }
                 }
             }

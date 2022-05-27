@@ -49,7 +49,7 @@ class ChannelTask : Task {
 
             if(bytes.empty()) {
                 version(GEAR_IO_DEBUG) {
-                    log.warning("A null buffer poped");
+                    log.warn("A null buffer poped");
                 }
                 break;
             }
@@ -72,7 +72,7 @@ class ChannelTask : Task {
             if(_isFinishing) {
                 version(GEAR_DEBUG) {
                     if(!bytes.empty() || !_buffers.empty()) {
-                        log.warning("The buffered data lost");
+                        log.warn("The buffered data lost");
                     }
                 }
                 break;

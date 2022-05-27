@@ -72,7 +72,7 @@ abstract class AbstractChannel : Channel {
 
         } else {
             version (GEAR_IO_DEBUG) {
-                log.warning("The channel[fd=%d] has already been closed (%s) or closing (%s)",
+                log.warn("The channel[fd=%d] has already been closed (%s) or closing (%s)",
                  this.handle, _isClosed, _isClosing);
             }
         }
@@ -96,7 +96,7 @@ abstract class AbstractChannel : Channel {
     }
 
     protected void ErrorOccurred(ErrorCode code, string msg) {
-        debug log.warning("isRegistered: %s, isClosed: %s, msg=%s", _isRegistered, _isClosed, msg);
+        debug log.warn("isRegistered: %s, isClosed: %s, msg=%s", _isRegistered, _isClosed, msg);
         if (errorHandler !is null) {
             errorHandler(new IoError(code, msg));
         }
@@ -177,7 +177,7 @@ class EventChannel : AbstractChannel {
 
     //     if(isBusy) {
     //         import std.parallelism;
-    //         version (GEAR_DEBUG) log.warning("Close operation delayed");
+    //         version (GEAR_DEBUG) log.warn("Close operation delayed");
     //         auto theTask = task(() {
     //             while(isBusy) {
     //                 version (GEAR_DEBUG) log.info("waitting for idle [fd=%d]...", this.handle);

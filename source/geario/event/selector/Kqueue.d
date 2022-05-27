@@ -69,7 +69,7 @@ class AbstractSelector : Selector {
         _eventChannel.Close();
         int r = core.sys.posix.unistd.close(_kqueueFD);
         if(r != 0) {
-            version(GEAR_DEBUG) log.warning("Error: %d", r);
+            version(GEAR_DEBUG) log.warn("Error: %d", r);
         }
 
         super.Dispose();
@@ -223,7 +223,7 @@ class AbstractSelector : Selector {
             log.info("handling event: events=%d, fd=%d", eventFlags, channel.handle);
 
             if (eventFlags & EV_ERROR) {
-                log.warning("channel[fd=%d] has a Error.", channel.handle);
+                log.warn("channel[fd=%d] has a Error.", channel.handle);
                 channel.Close();
                 continue;
             }
@@ -259,7 +259,7 @@ class AbstractSelector : Selector {
         }
         else
         {
-            log.warning("Unhandled channel filter: %d", filter);
+            log.warn("Unhandled channel filter: %d", filter);
         }
     }
 }

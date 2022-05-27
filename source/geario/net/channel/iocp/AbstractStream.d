@@ -175,11 +175,11 @@ abstract class AbstractStream : AbstractSocketChannel {
         bool result = false;
         if ( iResult != NO_ERROR ) {
             DWORD dwLastError = WSAGetLastError();
-            log.warning("getsockopt(SO_CONNECT_TIME) failed with Error: code=%d, message=%s", 
+            log.warn("getsockopt(SO_CONNECT_TIME) failed with Error: code=%d, message=%s", 
                 dwLastError, GetErrorMessage(dwLastError));
         } else {
             if (seconds == 0xFFFFFFFF) {
-                version(GEAR_IO_DEBUG) log.warning("Connection not established yet (destination: %s).", addr);
+                version(GEAR_IO_DEBUG) log.warn("Connection not established yet (destination: %s).", addr);
                 // so to check again
                 goto CHECK;
             } else {
@@ -266,14 +266,14 @@ abstract class AbstractStream : AbstractSocketChannel {
         } else if (readLen == 0) {
             version (GEAR_IO_DEBUG) {
                 if (_remoteAddress !is null)
-                    log.warning("connection broken: %s", _remoteAddress.toString());
+                    log.warn("connection broken: %s", _remoteAddress.toString());
             }
             OnDisconnected();
             // if (_isClosed)
             //     this.Close();
         } else {
             version (GEAR_IO_DEBUG) {
-                log.warning("undefined behavior on thread %d", GetTid());
+                log.warn("undefined behavior on thread %d", GetTid());
             } else {
                 this._error = true;
                 this._errorMessage = "undefined behavior on thread";
@@ -313,7 +313,7 @@ abstract class AbstractStream : AbstractSocketChannel {
 
             } else {
                 version(GEAR_METRIC) {
-                    log.warning("Request peeding... Task status: %s", task.status);
+                    log.warn("Request peeding... Task status: %s", task.status);
                 }
             }
 
@@ -358,7 +358,7 @@ abstract class AbstractStream : AbstractSocketChannel {
         
         // keep thread-safe here
         //if(!cas(&_isSingleWriteBusy, false, true)) {
-        //    version (GEAR_IO_DEBUG) log.warning("busy writing. fd=%d", this.handle);
+        //    version (GEAR_IO_DEBUG) log.warn("busy writing. fd=%d", this.handle);
         //    return;
         //}
 
@@ -390,10 +390,10 @@ abstract class AbstractStream : AbstractSocketChannel {
         } else if (nBytes > 0) { 
             writeBytes.popFrontN(nBytes);
             version (GEAR_IO_DEBUG)
-                log.warning("remaining data: %d / %d, fd=%d", data.length - nBytes, data.length, this.handle);
+                log.warn("remaining data: %d / %d, fd=%d", data.length - nBytes, data.length, this.handle);
         } else { 
             version (GEAR_IO_DEBUG)
-            log.warning("I/O busy: writing. fd=%d", this.handle);
+            log.warn("I/O busy: writing. fd=%d", this.handle);
         }   
     }
     

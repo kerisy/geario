@@ -75,7 +75,7 @@ class Framed(DT, ET)
 
             if (result == 0)
             {
-                // log.warning("waiting data ..");
+                // log.warn("waiting data ..");
                 break;
             }
         }

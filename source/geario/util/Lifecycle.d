@@ -64,7 +64,7 @@ abstract class AbstractLifecycle : Lifecycle {
         if (cas(&_isRunning, false, true)) {
             Initialize();
         } else {
-            version(GEAR_DEBUG) log.warning("Starting repeatedly!");
+            version(GEAR_DEBUG) log.warn("Starting repeatedly!");
         }
     }
 
@@ -72,7 +72,7 @@ abstract class AbstractLifecycle : Lifecycle {
         if (cas(&_isRunning, true, false)) {
             Destroy();
         } else {
-            version(GEAR_DEBUG) log.warning("Stopping repeatedly!");
+            version(GEAR_DEBUG) log.warn("Stopping repeatedly!");
         }
     }
 

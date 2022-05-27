@@ -176,17 +176,17 @@ enum TimeUnit : string {
     Nanosecond = "nsecs"
 }
 
-// return unix timestamp
-long Time() {
-    return DateTime.timestamp;
+// return current unix timestamp
+long time() {
+    return Clock.currTime.toUnixTime();
 }
 
 // return formated time string from timestamp
-string Date(string format, long timestamp = 0) {
+string date(string format, long timestamp = 0) {
     import std.datetime : SysTime;
     import std.conv : to;
 
-    long newTimestamp = timestamp > 0 ? timestamp : Time();
+    long newTimestamp = timestamp > 0 ? timestamp : time();
 
     string timeString;
 

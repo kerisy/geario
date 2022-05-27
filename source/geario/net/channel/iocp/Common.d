@@ -38,7 +38,7 @@ mixin template CheckIocpError() {
 
         if (ERROR_IO_PENDING != dwLastError) { // ERROR_IO_PENDING
             import geario.system.Error;
-            log.warning("erro=%d, dwLastError=%d", erro, dwLastError);
+            log.warn("erro=%d, dwLastError=%d", erro, dwLastError);
             this._error = true;
             this._errorMessage = GetErrorMessage(dwLastError); // format("IOCP Error: code=%s", dwLastError);
         }

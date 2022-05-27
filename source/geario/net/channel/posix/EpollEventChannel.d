@@ -34,13 +34,13 @@ class EpollEventChannel : EventChannel {
         int r = eventfd_write(this.handle, 1);
         //do_sock_write(r);
         if(r != 0) {
-            log.warning("Error: %d", r);
+            log.warn("Error: %d", r);
         }        
     }
 
     override void OnWrite() {
         version (GEAR_IO_DEBUG) log.trace("eventLoop running: %s, [fd=%d]", eventLoop.IsRuning, this.handle);
-        version (GEAR_IO_DEBUG) log.warning("do nothing");
+        version (GEAR_IO_DEBUG) log.warn("do nothing");
     }
 
     override void OnRead() {
@@ -51,7 +51,7 @@ class EpollEventChannel : EventChannel {
         version (GEAR_IO_DEBUG) {
             log.trace("result=%d, value=%d, fd=%d", r, value, this.handle);
             if(r != 0) {
-                log.warning("Error: %d", r);
+                log.warn("Error: %d", r);
             }
         }
     }

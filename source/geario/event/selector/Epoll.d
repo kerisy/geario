@@ -92,7 +92,7 @@ class AbstractSelector : Selector {
         _eventChannel.Close();
         int r = core.sys.posix.unistd.close(_epollFD);
         if(r != 0) {
-            version (GEAR_IO_DEBUG) log.warning("Error: %d", r);
+            version (GEAR_IO_DEBUG) log.warn("Error: %d", r);
         }
 
         super.Dispose();
@@ -121,7 +121,7 @@ class AbstractSelector : Selector {
         // e.events = EPOLLIN | EPOLLET | EPOLLERR | EPOLLHUP | EPOLLRDHUP | EPOLLOUT;
         // int s = epoll_ctl(_epollFD, EPOLL_CTL_ADD, infd, &e);
         // if (s == -1) {
-        //     debug log.warning("failed to register channel: fd=%d", infd);
+        //     debug log.warn("failed to register channel: fd=%d", infd);
         //     return false;
         // } else {
         //     return true;
@@ -129,7 +129,7 @@ class AbstractSelector : Selector {
         if (EpollCtl(channel, EPOLL_CTL_ADD)) {
             return true;
         } else {
-            debug log.warning("failed to register channel: fd=%d", channel.handle);
+            debug log.warn("failed to register channel: fd=%d", channel.handle);
             return false;
         }
     }
@@ -144,7 +144,7 @@ class AbstractSelector : Selector {
         if (EpollCtl(channel, EPOLL_CTL_DEL)) {
             return true;
         } else {
-            log.warning("deregister channel failed: fd=%d", fd);
+            log.warn("deregister channel failed: fd=%d", fd);
             return false;
         }
     }
@@ -168,7 +168,7 @@ class AbstractSelector : Selector {
         foreach (i; 0 .. len) {
             AbstractChannel channel = cast(AbstractChannel)(events[i].data.ptr);
             if (channel is null) {
-                debug log.warning("channel is null");
+                debug log.warn("channel is null");
             } else {
                 ChannelEventHandle(channel, events[i].events);
             }
@@ -179,7 +179,7 @@ class AbstractSelector : Selector {
 
     private void ChannelEventHandle(AbstractChannel channel, uint event) {
         version (GEAR_IO_DEBUG) {
-            log.warning("thread: %s", Thread.getThis().name());
+            log.warn("thread: %s", Thread.getThis().name());
 
             // Thread.sleep(300.msecs);
             log.info("handling event: selector=%d, channel=%d, events=%d, isReadable: %s, isWritable: %s, isClosed: %s", 
@@ -191,11 +191,11 @@ class AbstractSelector : Selector {
                 /* An Error has occured on this fd, or the socket is not
                     ready for reading (why were we notified then?) */
                 version (GEAR_IO_DEBUG) {
-                    log.warning("event=%d, isReadable: %s, isWritable: %s", 
+                    log.warn("event=%d, isReadable: %s, isWritable: %s", 
                         event, IsReadable(event), IsWritable(event));
 
                     if (IsError(event)) {
-                        log.warning("channel Error: fd=%s, event=%d, errno=%d, message=%s",
+                        log.warn("channel Error: fd=%s, event=%d, errno=%d, message=%s",
                                 channel.handle, event, errno, GetErrorMessage(errno));
                     } else {
                         log.info("channel closed: fd=%d, errno=%d, message=%s",
@@ -227,14 +227,14 @@ class AbstractSelector : Selector {
                 channel.OnWrite();
                 channel.OnRead();
             } else {
-                debug log.warning("Only read/write/close events can be handled, current event: %d", event);
+                debug log.warn("Only read/write/close events can be handled, current event: %d", event);
             }
         } catch (Exception e) {
             debug {
                 log.error("Error while handing channel: fd=%s, exception=%s, message=%s",
                         channel.handle, typeid(e), e.msg);
             }
-            version(GEAR_DEBUG) log.warning(e);
+            version(GEAR_DEBUG) log.warn(e);
         }
     }
 
@@ -324,7 +324,7 @@ class AbstractSelector : Selector {
          * be EPOLL_CTL_DEL.
          */
         if (res < 0 && errno != EBADF && errno != ENOENT && errno != EPERM) {
-            log.warning("epoll_ctl failed");
+            log.warn("epoll_ctl failed");
             return false;
         } else
             return true;

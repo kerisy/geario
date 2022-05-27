@@ -45,7 +45,7 @@ abstract class AbstractSocketChannel : AbstractChannel {
     override void Close()
     {
         // if (_isClosing) {
-        //     // debug log.warning("already closed [fd=%d]", this.handle);
+        //     // debug log.warn("already closed [fd=%d]", this.handle);
         //     return;
         // }
         // _isClosing = true;
@@ -60,7 +60,7 @@ abstract class AbstractSocketChannel : AbstractChannel {
             if (IsBusy()) {
                 import std.parallelism;
 
-                version (GEAR_DEBUG) log.warning("Close operation delayed");
+                version (GEAR_DEBUG) log.warn("Close operation delayed");
 
                 auto theTask = task(() {
                     super.Close();

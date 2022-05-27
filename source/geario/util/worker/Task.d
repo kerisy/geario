@@ -79,7 +79,7 @@ abstract class Task {
         if(!cas(&_status, TaskStatus.Processing, TaskStatus.Terminated) && 
             !cas(&_status, TaskStatus.Ready, TaskStatus.Terminated)) {
             version(GEAR_IO_DEBUG) {
-                log.warning("The task status: %s", _status);
+                log.warn("The task status: %s", _status);
             }
         }
     }
@@ -98,8 +98,8 @@ abstract class Task {
             }
         } else {
             version(GEAR_IO_DEBUG) {
-                log.warning("The task status: %s", _status);
-                log.warning("Failed to set the task status to Done: %s", _status);
+                log.warn("The task status: %s", _status);
+                log.warn("Failed to set the task status to Done: %s", _status);
             }
         }
     }
@@ -120,7 +120,7 @@ abstract class Task {
             }
             DoExecute();
         } else {
-            log.warning("Failed to Execute task %d. Its status is: %s", id, _status);
+            log.warn("Failed to Execute task %d. Its status is: %s", id, _status);
         }
     }
 

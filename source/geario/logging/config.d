@@ -62,11 +62,10 @@ enum Level:int
 {
     Trace = 1,
     Info = 2,
-    Warning = 3,
+    Warn = 3,
     Error = 4,
     Fatal = 5
 }
-
 
 /*
  * Convert level from string type to Level
@@ -83,8 +82,8 @@ Level toLevel(string str)
         case "info":
             l = Level.Info;
             break;
-        case "warning":
-            l = Level.Warning;
+        case "warn":
+            l = Level.Warn;
             break;
         case "error":
             l = Level.Error;
@@ -103,26 +102,26 @@ Level toLevel(string str)
  * Convert level from Level type to string
  */
 @safe
-string levelToString(Level level)
+string levelToViewString(Level level)
 {
     string l;
 
     final switch (level)
     {
         case Level.Trace:
-            l = "trace";
+            l = "TRACE";
             break;
         case Level.Info:
-            l = "info";
+            l = "INFO";
             break;
-        case Level.Warning:
-            l = "warning";
+        case Level.Warn:
+            l = "WARN";
             break;
         case Level.Error:
-            l = "error";
+            l = "ERROR";
             break;
         case Level.Fatal:
-            l = "fatal";
+            l = "FATAL";
             break;
     }
 

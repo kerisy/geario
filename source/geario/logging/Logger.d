@@ -112,11 +112,11 @@ public:
     }
 
     /*
-     * Write message with level "warning" to logger
+     * Write message with level "warn" to logger
      */
-    void warning(string file = __FILE__ , size_t line = __LINE__ , M...)(lazy const M msg) nothrow
+    void warn(string file = __FILE__ , size_t line = __LINE__ , M...)(lazy const M msg) nothrow
     {
-        putMsg(file, line, Level.Warning, msg);
+        putMsg(file, line, Level.Warn, msg);
     }
 
     /*
@@ -195,10 +195,10 @@ private:
     /*
      * Level getter in string type
      */
-    public immutable (string) level()
-    {
-        return _level.levelToString();
-    }
+    // public immutable (string) level()
+    // {
+    //     return _level.levelToString();
+    // }
 
     /*
      * Create logger impl
@@ -356,35 +356,13 @@ class DefaultEncoder : Encoder
      */
     string encode(string file, size_t line, immutable Level level, const string message)
     {
-        import std.string;
-        import std.process;
+        import std.string : format;
+        import std.conv : to;
 
-        string strLevel = "[" ~ levelToString(level) ~ "]";
-        return format("%-27s %-9s %s %s - %s:%d", Clock.currTime().toSimpleString(), strLevel, thisThreadID, message, file, line);
+		import geario.util.DateTime : date;
+        import geario.util.ThreadHelper : GetTid;
+        
+        string strLevel = "[" ~ levelToViewString(level) ~ "]";
+        return format("%-19s %s %-7s %s - %s:%d", date("Y-m-d H:i:s", Clock.currTime.toUnixTime()), GetTid().to!string, strLevel, message, file, line);
     }
 }
-
-// import core.thread;
-
-// version (Posix) {
-//     import hunt.system.syscall;
-
-//     ThreadID getTid() {
-//         version(FreeBSD) {
-//             long tid;
-//             syscall(SYS_thr_self, &tid);
-//             return cast(ThreadID)tid;
-//         } else version(OSX) {
-//             return cast(ThreadID)syscall(SYS_thread_selfid);
-//         } else version(linux) {
-//             return cast(ThreadID)syscall(__NR_gettid);
-//         } else {
-//             return 0;
-//         }
-//     }
-// } else {
-//     import core.sys.windows.winbase: GetCurrentThreadId;
-//     ThreadID getTid() {
-//         return GetCurrentThreadId();
-//     }
-// }

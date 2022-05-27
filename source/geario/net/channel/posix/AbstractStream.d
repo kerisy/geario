@@ -81,7 +81,7 @@ abstract class AbstractStream : AbstractSocketChannel {
 
             } else {
                 version(GEAR_METRIC) {
-                    log.warning("Request peeding... Task status: %s", task.Status);
+                    log.warn("Request peeding... Task status: %s", task.Status);
                 }
             }
 
@@ -221,12 +221,12 @@ abstract class AbstractStream : AbstractSocketChannel {
 
             if(errno == EAGAIN) {
                 version (GEAR_IO_DEBUG) {
-                    log.warning("Warning on write: fd=%d, errno=%d, message=%s", this.handle,
+                    log.warn("Warning on write: fd=%d, errno=%d, message=%s", this.handle,
                         errno, GetErrorMessage(errno));
                 }
             } else if(errno == EINTR || errno == EWOULDBLOCK) {
                 // https://stackoverflow.com/questions/38964745/can-a-socket-become-writeable-after-an-ewouldblock-but-before-an-epoll-wait
-                debug log.warning("Warning on write: fd=%d, errno=%d, message=%s", this.handle,
+                debug log.warn("Warning on write: fd=%d, errno=%d, message=%s", this.handle,
                         errno, GetErrorMessage(errno));
                 // eventLoop.update(this);
             } else {
@@ -246,7 +246,7 @@ abstract class AbstractStream : AbstractSocketChannel {
             }
         } else {
             version (GEAR_DEBUG) {
-                log.warning("nBytes=%d, message: %s", nBytes, lastSocketError());
+                log.warn("nBytes=%d, message: %s", nBytes, lastSocketError());
                 assert(false, "Undefined behavior!");
             } else {
                 this._error = true;
@@ -286,7 +286,7 @@ abstract class AbstractStream : AbstractSocketChannel {
                     log.trace("A buffer is written out. fd=%d", this.handle);
                 return true;
             } else {
-                log.warning("Writing cancelled or an Error ocurred. fd=%d", this.handle);
+                log.warn("Writing cancelled or an Error ocurred. fd=%d", this.handle);
                 return false;
             }
         } else {
@@ -330,7 +330,7 @@ abstract class AbstractStream : AbstractSocketChannel {
         // keep thread-safe here
         if(!cas(&_isBusyWritting, false, true)) {
             // version (GEAR_IO_DEBUG)
-            version(GEAR_DEBUG) log.warning("busy writing. fd=%d", this.handle);
+            version(GEAR_DEBUG) log.warn("busy writing. fd=%d", this.handle);
             return;
         }
 
@@ -375,7 +375,7 @@ abstract class AbstractStream : AbstractSocketChannel {
                 // eventLoop.update(this);
             }
             version (GEAR_IO_DEBUG) {
-                log.warning("running here, fd=%d", this.handle);
+                log.warn("running here, fd=%d", this.handle);
             }
         }
     }
