@@ -6,6 +6,8 @@ import geario.util.ThreadPool;
 import core.sync.mutex;
 import core.thread;
 
+import geario.logging;
+
 class EventLoopThreadPool
 {
 public:

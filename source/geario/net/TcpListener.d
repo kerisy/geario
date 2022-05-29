@@ -46,7 +46,7 @@ class TcpListener : AbstractListener
     protected bool _isBinded = false;
 
     protected EventLoopThreadPool _loopThreadPool;
-    protected size_t _ioThreads = 1;
+    protected size_t _ioThreads;
     protected TcpStreamOptions _tcpStreamoption;
     protected EventHandler _shutdownHandler;
 
@@ -60,6 +60,7 @@ class TcpListener : AbstractListener
 
     this(EventLoop loop = null, AddressFamily family = AddressFamily.INET, size_t bufferSize = 1024)
     {
+        _ioThreads = 1;
         _tcpStreamoption = TcpStreamOptions.Create();
         _tcpStreamoption.bufferSize = bufferSize;
 

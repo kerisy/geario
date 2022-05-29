@@ -58,6 +58,10 @@ class TcpStream : AbstractStream {
         else
             _tcpOption = option;
         this.socket = new Socket(family, SocketType.STREAM, ProtocolType.TCP);
+        // int value = 1;
+        // if (-1 == .setsockopt(socket.handle, cast(int) SocketOptionLevel.SOCKET, cast(int) SO_NOSIGPIPE, &value, cast(uint) value.sizeof))
+        //     throw new SocketOSException("Unable to set socket option");
+
         super(loop, family, _tcpOption.bufferSize);
         version(GEAR_IO_DEBUG) log.trace("buffer size: %d bytes", _tcpOption.bufferSize);
     }
@@ -69,6 +73,10 @@ class TcpStream : AbstractStream {
         else
             _tcpOption = option;
         this.socket = socket;
+        // int value = 1;
+        // if (-1 == .setsockopt(socket.handle, cast(int) SocketOptionLevel.SOCKET, cast(int) SO_NOSIGPIPE, &value, cast(uint) value.sizeof))
+        //     throw new SocketOSException("Unable to set socket option");
+
         super(loop, socket.addressFamily, _tcpOption.bufferSize);
         _remoteAddress = socket.remoteAddress();
         _localAddress = socket.localAddress();
